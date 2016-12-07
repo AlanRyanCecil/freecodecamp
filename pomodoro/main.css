@@ -1,0 +1,72 @@
+[ng-cloak] {
+    display: none;
+}
+
+body {
+    background-color: #444;
+}
+
+.fillBG {
+    fill: #444;
+}
+
+.strokeBG {
+    fill: #FA3;
+}
+
+label {
+    /*font-size: 1em;*/
+    color: #5AF !important;
+}
+
+input {
+    margin: 0 2em 0 0;
+    color: #5AF !important;
+}
+
+.formControl {
+    background-color: transparent;
+    font-size: 2em;
+}
+
+.startButton {
+    background-color: #26F !important;
+}
+
+.stopButton {
+    background-color: #F63 !important;
+}
+
+svg {
+  display: block;
+  margin: 60px auto;
+}
+
+#loader {
+    fill: #0088cc;
+    fill-opacity: 0;
+    stroke: #A3F;
+    stroke-width: .1vw;
+    stroke-linejoin: round; 
+}
+
+#work {
+    fill: #0A9;
+}
+
+#break {
+    fill: #33F;
+}
+
+#border {
+    fill: #222;
+}
+
+.box {
+    background-color: red;
+}
+
+path {
+    /*fill: #579;*/
+    fill: #444;
+}

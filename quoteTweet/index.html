@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link href='https://fonts.googleapis.com/css?family=Muli:400,300italic' rel='stylesheet' type='text/css'>
+</head>
+<body ng-app="TweeterApp" ng-controller="MainCtrl" ng-cloak>
+
+<md-content class="md-padding" layout-xs="column" layout="row" layout-align="center center">
+        <md-card flex="60" class="card" ng-class="{'flipped': isFlipped}" ng-click="isFlipped=!isFlipped">
+            <md-card-content>
+                <div id="random-quote" class="dynamic-content" layout="center center"></div>
+                <div id="quoted" class="dynamic-content" flex="90"></div>
+            </md-card-content>
+            <md-card-actions layout="row" layout-align="start center">
+                <md-button class="md-primary" ng-click="getRandomTweet()">New Quote</md-button>
+                <md-button flex-offset="90">
+                    <ng-md-icon id="facebook-icon" icon="facebook" aria-label="facebook Icon" size="42"></ng-md-icon>
+                </md-button>
+                <!-- <a class="twitter-share-button" href="https://twitter.com/intent/tweet"> Tweet</a> -->
+                <md-button layout="column" target="_blank" ng-href="https://twitter.com/intent/tweet?text={{ quote }}" >
+                    <ng-md-icon class="set-icon-fab" id="twitter-icon" icon="twitter" aria-label="Twitter Icon" size="42"></ng-md-icon>
+                </md-button>
+            </md-card-actions>
+        </md-card>
+</md-content>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.2/angular.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-animate.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-aria.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.7.0/angular-material-icons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SVG-Morpheus/0.1.8/svg-morpheus.js"></script> 
+    <script src="app.js"></script>
+</body>
+</html>

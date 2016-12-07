@@ -1,0 +1,83 @@
+[ng-cloak] {
+    display: none;
+}
+
+body {
+  background-color: #777;
+}
+
+.box {
+  border-radius: .2em;
+}
+
+.calc-body {
+  background-image: url('https://img05.deviantart.net/6f69/i/2009/084/e/9/metal_texture_13_by_wojtar_stock.jpg');
+  background-color: #555;
+  margin-top: 10em;
+  width: 30vw;
+  height: 40vw;
+  border-radius: 1em;
+  box-shadow: 1em 1em 1em rgba(0, 0, 0, .7);
+  box-shadow: inset .5vw .5vw 1vw rgba(0, 0, 20, .7), inset -.5vw -.5vw 1vw rgba(0, 0, 20, .7);
+}
+
+.calc-shadow {
+  background-image: none;
+  background-color: transparent;
+  box-shadow: 1vw 1vw 1vw rgba(0, 0, 0, .8);
+  position: absolute;
+}
+
+#screen {
+  background-color: #BCB;
+  box-shadow: inset .2vw .2vw .2vw rgba(0, 0, 0, .7);
+  color: #444;
+  font-size: 5.5vw;
+  text-align: right;
+  font-family: 'Squada One', cursive;
+  width: 90%;
+  height: 15%;
+  margin-top: 5%;
+  margin-bottom: 7%;
+  padding: 0 .3vw .5vw .3vw;
+}
+
+.button-row {
+  width: 100%;
+}
+
+.calc-button {
+  background-image: url('http://14379-presscdn-0-86.pagely.netdna-cdn.com/wp-content/themes/butt-douglas-centered/textures/img/tex/c/2/c2f7fff897445cc1325f2e681e3284d1_200.jpg');
+  background-position: center;
+  background-color: #569;
+  color: #CCC;
+  border-color: #A9A;
+  font-size: 4vw;
+  text-align: center;
+  text-shadow: .1vw .1vw .0vw rgba(0, 0, 0, .4);
+  box-shadow: inset .1vw .1vw .3vw rgba(0, 0, 20, .7), inset -.1vw -.1vw .3vw rgba(0, 0, 20, .7);
+  width: 5vw;
+  height: 5vw;
+  margin: .3vw;
+  opacity: .8;
+}
+
+.zero {
+  width: 10.5vw;
+}
+
+.equals {
+  height: 10.5vw;
+}
+
+.blank {
+  position: absolute;
+}
+
+button:focus {
+  outline: 0;
+}
+
+.clear {
+  font-size: 3vw;
+}

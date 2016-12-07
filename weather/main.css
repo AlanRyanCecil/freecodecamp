@@ -1,0 +1,52 @@
+[ng-cloak] {
+    display: none;
+}
+
+body {
+  background-image: url('https://samsonlinejournal.files.wordpress.com/2015/04/blue_sky_and_green_grass-wide.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+#readout-container {
+  margin-top: 10em;
+  background-color: rgba(255, 255, 255, .2);
+  padding: 1em;
+  padding-top: 5em;
+  border-radius: .2em;
+  box-shadow: .2em .2em .5em rgba(0, 0, 0, .5);
+  color: rgba(232, 226, 220, 1);
+  text-shadow: .2em .2em .2em rgba(0, 0, 0, .5);
+  display: none;
+  z-index: 2;
+}
+
+.readout {
+  margin: 0em .5em 0em .5em;
+  padding: 0em;
+  text-align: center;
+}
+
+#location-name {
+  font-size: 5em;
+}
+
+#condition {
+  font-size: 3em;
+}
+
+#temperature {
+  font-size: 4em;
+}
+
+#logo-box {
+  width: 100px;
+  margin-top: 5em;
+  padding: 5px;
+  background-color: white;
+}
+
+#logo {
+  width: 100%;
+  display: block;
+}

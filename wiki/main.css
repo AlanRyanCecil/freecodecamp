@@ -1,0 +1,23 @@
+[ng-cloak] {
+    display: none;
+}
+
+h1 {
+    font-size: 5em;
+}
+
+input {
+    text-align: center;
+}
+
+md-card {
+    background-color: #888;
+}
+
+a {
+    text-decoration: none;
+}
+
+.article {
+    color: #FFF;
+}

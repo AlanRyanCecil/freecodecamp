@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link href='https://fonts.googleapis.com/css?family=Muli:400,300italic' rel='stylesheet' type='text/css'>
+</head>
+<body>
+    
+    <main ng-app="WikiApp" ng-controller="MainCtrl" ng-cloak layout-padding>
+        <div layout="column" layout-align="center center">
+            <h1> {{ greeting }} </h1>
+            <div layout="row">
+                <md-button class="md-raised" href="https://en.wikipedia.org/wiki/Special:Random" target="_blank" aria-label="description" md-ripple-size="full">Random</md-button>
+                <input type="text" ng-model="searchTerm" ng-submit="getSearchArticle();">
+                <md-button class="md-raised" href="#" aria-label="description" md-ripple-size="full" ng-click="getSearchArticle();">Search</md-button>
+            </div>
+        </div>
+        <div layout="row" layout-align="center center" ng-repeat="article in articles">
+            <md-card flex="30" layout-align="center center">
+                <md-card-content>
+                    <a ng-href="{{ 'https://en.wikipedia.org/?curid=' + article.pageid }}" target="_blank"><h2 class="article"> {{ article.title }} </h2></a>
+                </md-card-content>
+                <div class="md-actions" layout="row|column" layout-align="start|end|center start|end|center"></div>
+            </md-card>
+        </div>
+    </main>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.2/angular.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-animate.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-aria.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.7.0/angular-material-icons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SVG-Morpheus/0.1.8/svg-morpheus.js"></script> 
+    <script src="app.js"></script>
+</body>
+</html>

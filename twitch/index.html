@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>twitch</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.min.css">
+    <link rel="stylesheet" href="main.css">
+    <link href='https://fonts.googleapis.com/css?family=Muli:400,300italic' rel='stylesheet' type='text/css'>
+</head>
+<body ng-app="twitchApp" ng-controller="twitchCtrl" ng-cloak>
+<main class="md-padding">
+    <div layout="row" layout-align="center center">
+        <div flex="45" class="title-bar" layout="row" layout-align="center center">
+            <h1 class="title" layout-align="center center">wicked TWITCH</h1>
+        </div>
+    </div>
+
+    <div ng-repeat="stream in streams">
+        <div layout="row" layout-align="center center">
+
+            <md-card flex="40" md-theme="{{ showDarkTheme ? 'dark-purple' : 'default' }}" md-theme-watch ng-class="{blue: stream.stream, gray: !stream.stream}">
+                <md-card-title>
+                    <md-card-title-text>
+                        <a ng-href="{{ channelUrl(stream._links.channel) }}" target="_blank"><span class="md-headline"> {{ streamName( stream._links.self ) }} </span></a>
+                        <span ng-if="stream.stream" class="md-subhead"> Game: {{ stream.stream.channel.game }} </span>
+                        <span ng-if="stream.stream" class="md-subhead"> Followers: {{ stream.stream.channel.followers }} </span>
+                        <span ng-if="!stream.stream" class="md-subhead">offline</span>
+                    </md-card-title-text>
+                    <md-card-title-media>
+                        <!-- <div class="md-media-sm card-media"></div> -->
+                        <a ng-if="stream.stream" target="_blank" ng-href=" {{ stream.stream.channel.url }} "><img src=" {{ stream.stream.channel.logo }} "></a>
+                        <a ng-if="!stream.stream" target="_blank" ng-href=" {{ channelUrl( stream._links.channel ) }} "><img src=" {{ offline }} "></a>
+                    </md-card-title-media>
+                </md-card-title>
+                <md-card-actions layout="row" layout-align="end center">
+                    <!-- <md-button>Action 1</md-button> -->
+                    <!-- <md-button>Action 2</md-button> -->
+                </md-card-actions>
+            </md-card>
+
+        </div>
+    </div>
+</main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.2/angular.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-animate.js"></script>
+    <script src="https://code.angularjs.org/1.5.2/angular-aria.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.7.0/angular-material-icons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SVG-Morpheus/0.1.8/svg-morpheus.js"></script> 
+    <script src="twitch.js"></script>
+</body>
+</html>

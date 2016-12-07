@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Calanculater</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.min.css">
+        <link rel="stylesheet" href="main.css">
+        <link href='https://fonts.googleapis.com/css?family=Muli:400,300italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Squada+One' rel='stylesheet' type='text/css'>
+    </head>
+    <body>
+        
+        <main ng-app="CalculatorApp" ng-controller="MainCtrl" ng-cloak>
+            <div id="calculator" layout="colunm" layout-align="center start">
+                <div class="box calc-body calc-shadow"></div>
+                <div class="box calc-body" layout="column" layout-align="start center">
+                    <div class="box" id="screen"> {{ displayScreen }} </div>
+                    <div id="button-row" layout="row">
+                        <!-- <button class="box calc-button clear" ng-click="clear()">AC</button> -->
+                        <button class="box calc-button clear zero" ng-click="clear()">CLEAR</button>
+                        <button class="box calc-button" ng-click="opperatorButton('/')">&divide;</button>
+                        <button class="box calc-button" ng-click="opperatorButton('X')">&times;</button>
+                    </div>
+                    <div id="button-row" layout="row">
+                        <button class="box calc-button" ng-click="numberButton('7')">7</button>
+                        <button class="box calc-button" ng-click="numberButton('8')">8</button>
+                        <button class="box calc-button" ng-click="numberButton('9')">9</button>
+                        <button class="box calc-button" ng-click="opperatorButton('-')">-</button>
+                    </div>
+                    <div id="button-row" layout="row">
+                        <button class="box calc-button" ng-click="numberButton('4')">4</button>
+                        <button class="box calc-button" ng-click="numberButton('5')">5</button>
+                        <button class="box calc-button" ng-click="numberButton('6')">6</button>
+                        <button class="box calc-button" ng-click="opperatorButton('+')">+</button>
+                    </div>
+                    <div id="button-row" layout="row">
+                        <button class="box calc-button" ng-click="numberButton('1')">1</button>
+                        <button class="box calc-button" ng-click="numberButton('2')">2</button>
+                        <button class="box calc-button" ng-click="numberButton('3')">3</button>
+                        <button class="box calc-button" ng-click="numberButton()"></button>
+                    </div>
+                    <div id="button-row" layout="row">
+                        <button class="box calc-button zero" ng-click="numberButton('0')">0</button>
+                        <!-- <button class="box calc-button" ng-click="numberButton()"></button> -->
+                        <button class="box calc-button" ng-click="pointButton()">.</button>
+                        <button class="box calc-button" ng-click="calculate()">=</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.2/angular.js"></script>
+        <script src="https://code.angularjs.org/1.5.2/angular-animate.js"></script>
+        <script src="https://code.angularjs.org/1.5.2/angular-aria.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.7.0/angular-material-icons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/SVG-Morpheus/0.1.8/svg-morpheus.js"></script> 
+        <script src="app.js"></script>
+    </body>
+</html>
