@@ -1,89 +1,80 @@
 'use strict';
 
 angular.module('PomodoroApp', ['ngMaterial'])
-    .controller('PomCtrl', ['$scope', '$interval', '$timeout', 'UpdateTimeService', function ($scope, $interval, $timeout, UpdateTimeService) {
-        $scope.work = 2;
-        $scope.break = 1;
-        $scope.totalTime = ($scope.work + $scope.break) * 60;
-        $scope.timerStart = 0;
-        $scope.timerStop = true;
+    .controller('PomCtrl', ['$scope', '$interval', '$timeout', function ($scope, $interval, $timeout) {
+        $scope.workInput = 20;
+        $scope.work = 20;
+        $scope.workCache = 20;
+        $scope.breakInput = 5;
+        $scope.break = 5;
+        $scope.breakCache = 5;
+        $scope.nullTime = 0;
         $scope.timerOn = false;
-        $scope.timeAtStop = 0;
-        $scope.elapsedTime = 0;
-        $scope.alpha = 0;
-        $scope.widthDivider = 3;
-        $scope.rad = (window.innerWidth / $scope.widthDivider) / 2;
+        $scope.fps = 5;
+
+        $scope.minToMill = function (min) {
+            return min * 60 * $scope.fps;
+        }
 
         $scope.updateTime = function () {
-            // $scope.totalTime = ($scope.work + $scope.break) ? ($scope.work + $scope.break) * 60 : 60;
-            UpdateTimeService.work = $scope.work * 60 * UpdateTimeService.fps;
-            UpdateTimeService.break = $scope.break * 60 * UpdateTimeService.fps;
+            $scope.work = $scope.minToMill($scope.workInput);
+            $scope.break = $scope.minToMill($scope.breakInput);
+            $scope.workCache = $scope.workInput;
+            $scope.breakCache = $scope.breakInput;
+            $scope.nullTime = 0;
+            $scope.$emit('updateTime');
             console.log("time changed");
         };
 
-        $scope.timerStartButton = function () {
-            if (!$scope.timerOn) {
-                $scope.timerStart = $scope.timerStart ? Date.now() - ($scope.timeAtStop - $scope.timerStart) : Date.now();
-                $scope.timerOn = true;
-            }
+        $scope.updateTime();
 
+        $scope.timerStartButton = function () {
+            $scope.timerOn = true;
         };
+
         $scope.timerStopButton = function () {
-            if ($scope.timerOn) {
-                $scope.timeAtStop = Date.now();
-                $scope.timerOn = false;
-            }
+            $scope.timerOn = false;
         };
 
         $scope.timerResetButton = function () {
             $scope.timerStart = 0;
+            $scope.timerOn = false;
             $timeout(function(){
                 $scope.timerStopButton();
             }, 2);
         };
 
         $scope.$on('updateWorkDisplay', function (event, data) {
-            $scope.work = data / (60 * UpdateTimeService.fps);
+            $scope.workInput = data / (60 * $scope.fps);
         });
 
         $scope.$on('updateBreakDisplay', function (event, data) {
-            $scope.break = data / (60 * UpdateTimeService.fps);
+            $scope.breakInput = data / (60 * $scope.fps);
         });
 
     }])
 
-    .service('UpdateTimeService', [function () {
-        this.fps = 5;
-        this.work = 600;
-        this.break = 300;
-    }])
-
-    .directive('chartJsPieTimer', ['$interval', 'UpdateTimeService', function ($interval, UpdateTimeService) {
+    .directive('chartJsPieTimer', ['$interval',function ($interval) {
         return {
             restrict: 'E',
             replace: true,
             template: '<canvas height="100"></canvas>',
-            link: function (scope, ielement, iattrs, controller) {
+            link: function ($scope, ielement, iattrs, controller) {
                 var pieCtx = ielement[0].getContext('2d');
 
                 var data = {
-                    // labels: [
-                    //     "",
-                    //     "Work",
-                    //     "Break"
-                    // ],
                     datasets: [
                         {
-                            data: [0, (UpdateTimeService.work), (UpdateTimeService.break)],
+                            data: [0, ($scope.work), ($scope.break)],
                             backgroundColor: [
                                 "transparent",
                                 "#86b925",
-                                "#28a386"
+                                "#3e94c3"
                             ],
                             hoverBackgroundColor: [
                                 "transparent",
                                 "#86b925",
-                                "#28a386"
+                                "#3e94c3"
                             ],
                             borderWidth: [0, 0, 0],
                             borderColor: [
@@ -98,7 +89,7 @@ angular.module('PomodoroApp', ['ngMaterial'])
                     type: 'doughnut',
                     data: data,
                     options: {
-                        cutoutPercentage: 85,
+                        cutoutPercentage: 75,
                         tooltips: {
                             enabled: false
                         }
@@ -108,30 +99,43 @@ angular.module('PomodoroApp', ['ngMaterial'])
                 var timeStart = Date.now();
 
                 function updateData () {
-                    pieChart.data.datasets[0].data[1] = UpdateTimeService.work;
-                    pieChart.data.datasets[0].data[2] = UpdateTimeService.break;
+                    pieChart.data.datasets[0].data[0] = $scope.nullTime;
+                    pieChart.data.datasets[0].data[1] = $scope.work;
+                    pieChart.data.datasets[0].data[2] = $scope.break;
                 }
 
+                $scope.$on('updateTime', function () {
+                    updateData();
+                    pieChart.update();
+                });
+
                 var intervalId = $interval(function () {
-                    if (UpdateTimeService.work > 0) {
-                        UpdateTimeService.work -= 1;
+                    if ($scope.work > 0 && $scope.timerOn) {
+                        $scope.work -= 1;
+                        $scope.nullTime += 1;
                         updateData();
-                        pieChart.data.datasets[0].data[0] += 1;
                         pieChart.update();
-                        if (UpdateTimeService.work % (60 * UpdateTimeService.fps) === 0) {scope.$emit('updateWorkDisplay', UpdateTimeService.work);}
+                        if ($scope.work % (60 * $scope.fps) === 0) {$scope.$emit('updateWorkDisplay', $scope.work);}
                         console.log("working");
-                    } else if (UpdateTimeService.work === 0 && UpdateTimeService.break > 0) {
-                        UpdateTimeService.break -= 1;
+                    } else if (!$scope.work && $scope.break > 0 && $scope.timerOn) {
+                        $scope.break -= 1;
+                        $scope.nullTime += 1;
                         updateData();
-                        pieChart.data.datasets[0].data[0] += 1;
                         pieChart.update();
-                        if (UpdateTimeService.break % (60 * UpdateTimeService.fps) === 0) {scope.$emit('updateBreakDisplay', UpdateTimeService.break);}
+                        if ($scope.break % (60 * $scope.fps) === 0) {$scope.$emit('updateBreakDisplay', $scope.break);}
                         console.log("on break");
-                    } else {
-                        $interval.cancel(intervalId);
+                    } else if (!$scope.work && !$scope.break && $scope.timerOn) {
+                        $scope.workInput = $scope.workCache;
+                        $scope.breakInput = $scope.breakCache;
+                        $scope.work = $scope.minToMill($scope.workCache);
+                        $scope.break = $scope.minToMill($scope.breakCache);
+                        $scope.nullTime = 0;
+                        $scope.timerOn = false;
+                        updateData();
+                        pieChart.update();
                         console.log("interval stopped");
                     }
-                }, 1000 / UpdateTimeService.fps);
+                }, 1000 / $scope.fps);
             }
         }
     }]);
