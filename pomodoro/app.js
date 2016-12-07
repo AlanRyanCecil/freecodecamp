@@ -29,8 +29,8 @@ angular.module('PomodoroApp', ['ngMaterial'])
         $scope.updateTime();
 
         $scope.timerStartButton = function () {
+            if (!$scope.timerOn) {$scope.soundTone();}
             $scope.timerOn = true;
-            $scope.soundTone();
         };
 
         $scope.timerStopButton = function () {
