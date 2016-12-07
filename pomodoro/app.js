@@ -2,12 +2,12 @@
 
 angular.module('PomodoroApp', ['ngMaterial'])
     .controller('PomCtrl', ['$scope', '$interval', '$timeout', function ($scope, $interval, $timeout) {
-        $scope.workInput = 20;
-        $scope.work = 20;
-        $scope.workCache = 20;
+        $scope.workInput = 25;
+        $scope.work = 0;
+        $scope.workCache = $scope.workInput;
         $scope.breakInput = 5;
-        $scope.break = 5;
-        $scope.breakCache = 5;
+        $scope.break = 0;
+        $scope.breakCache = $scope.breakInput;
         $scope.nullTime = 0;
         $scope.timerOn = false;
         $scope.fps = 5;
@@ -30,10 +30,12 @@ angular.module('PomodoroApp', ['ngMaterial'])
 
         $scope.timerStartButton = function () {
             $scope.timerOn = true;
+            $scope.soundTone();
         };
 
         $scope.timerStopButton = function () {
             $scope.timerOn = false;
+            Tone.Transport.stop();
         };
 
         $scope.timerResetButton = function () {
@@ -51,6 +53,33 @@ angular.module('PomodoroApp', ['ngMaterial'])
         $scope.$on('updateBreakDisplay', function (event, data) {
             $scope.breakInput = data / (60 * $scope.fps);
         });
+
+        //create a synth and connect it to the master output (your speakers)
+        var synth = new Tone.Synth({
+            "oscillator" : {
+                "type" : "sine",
+                "modulationFrequency" : 1
+            },
+            "envelope" : {
+                "attack" : 5,
+                "decay" : 5,
+                "sustain" : 5,
+                "release" : 15,
+            }
+        }).toMaster();
+
+        $scope.tone = new Tone.Loop(function(time){
+            synth.triggerAttackRelease(440, "16n", time);
+        }, "1n");
+        $scope.tone.start("0m").stop("1m");
+
+        $scope.soundTone =   function () {
+            Tone.Transport.start();
+            $timeout(function () {
+                Tone.Transport.stop();
+            }, 100);
+        }
+
 
     }])
 
@@ -110,6 +139,9 @@ angular.module('PomodoroApp', ['ngMaterial'])
                 });
 
                 var intervalId = $interval(function () {
+                    if ($scope.work === 1 && $scope.timerOn) {$scope.soundTone();}
+                    if ($scope.break === 1 && $scope.timerOn) {$scope.soundTone();}
+
                     if ($scope.work > 0 && $scope.timerOn) {
                         $scope.work -= 1;
                         $scope.nullTime += 1;
