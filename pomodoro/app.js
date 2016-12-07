@@ -44,7 +44,7 @@ angular.module('PomodoroApp', ['ngMaterial'])
     }])
 
     .service('UpdateTimeService', [function () {
-        this.fpse = 5;
+        this.fps = 5;
         this.work = 600;
         this.break = 300;
     }])
