@@ -16,8 +16,8 @@ angular.module('PomodoroApp', ['ngMaterial'])
 
         $scope.updateTime = function () {
             // $scope.totalTime = ($scope.work + $scope.break) ? ($scope.work + $scope.break) * 60 : 60;
-            UpdateTimeService.work = $scope.work * 60 * 5;
-            UpdateTimeService.break = $scope.break * 60 * 5;
+            UpdateTimeService.work = $scope.work * 60 * UpdateTimeService.fps;
+            UpdateTimeService.break = $scope.break * 60 * UpdateTimeService.fps;
             console.log("time changed");
         };
 
@@ -41,6 +41,15 @@ angular.module('PomodoroApp', ['ngMaterial'])
                 $scope.timerStopButton();
             }, 2);
         };
+
+        $scope.$on('updateWorkDisplay', function (event, data) {
+            $scope.work = data / (60 * UpdateTimeService.fps);
+        });
+
+        $scope.$on('updateBreakDisplay', function (event, data) {
+            $scope.break = data / (60 * UpdateTimeService.fps);
+        });
+
     }])
 
     .service('UpdateTimeService', [function () {
@@ -54,18 +63,10 @@ angular.module('PomodoroApp', ['ngMaterial'])
             restrict: 'E',
             replace: true,
             template: '<canvas height="100"></canvas>',
-            // scope: {},
             link: function (scope, ielement, iattrs, controller) {
                 var pieCtx = ielement[0].getContext('2d');
 
-                function minToMill (mins) {
-                    return mins * 60 * framesPerMin;
-                }
-
-                var framesPerMin = 5,
-                    workPeriod = minToMill(UpdateTimeService.work),
-                    breakPeriod = minToMill(UpdateTimeService.break),
-                    data = {
+                var data = {
                     // labels: [
                     //     "",
                     //     "Work",
@@ -117,18 +118,20 @@ angular.module('PomodoroApp', ['ngMaterial'])
                         updateData();
                         pieChart.data.datasets[0].data[0] += 1;
                         pieChart.update();
+                        if (UpdateTimeService.work % (60 * UpdateTimeService.fps) === 0) {scope.$emit('updateWorkDisplay', UpdateTimeService.work);}
                         console.log("working");
                     } else if (UpdateTimeService.work === 0 && UpdateTimeService.break > 0) {
                         UpdateTimeService.break -= 1;
                         updateData();
                         pieChart.data.datasets[0].data[0] += 1;
                         pieChart.update();
+                        if (UpdateTimeService.break % (60 * UpdateTimeService.fps) === 0) {scope.$emit('updateBreakDisplay', UpdateTimeService.break);}
                         console.log("on break");
                     } else {
                         $interval.cancel(intervalId);
                         console.log("interval stopped");
                     }
-                }, 1000 / framesPerMin);
+                }, 1000 / UpdateTimeService.fps);
             }
         }
     }]);
