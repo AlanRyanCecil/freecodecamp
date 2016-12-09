@@ -1,0 +1,52 @@
+[ng-cloak] {
+    display: none;
+}
+
+body {
+    font-family: 'Permanent Marker', cursive;
+    background-color: #ECE5D2;
+}
+
+.game-title {
+    font-size: 8vw !important;
+    color: #222;
+    max-height: 12vw;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.board {
+    width: 36vw;
+    height: 36vw;
+    border-radius: .3vw;
+    /*border: .3em solid #3A4049;*/
+    background-color: #ECDBB2;
+    /*background-image: url('https://images.freecreatives.com/wp-content/uploads/2015/10/free-lined-paper-texture.jpg');*/
+    background-image: url('https://images.freecreatives.com/wp-content/uploads/2016/01/Crumpled-White-Paper-Texture.jpg');
+    box-shadow: .4vw .6vw 1vw rgba(0, 16, 32, .6);
+    background-size: cover;
+}
+
+.boardCell {
+    border: .15vw solid #333240;
+    opacity: .8;
+}
+
+.move {
+    font-size: 12vw;
+    color: #000;
+}
+
+.avitar-selector {
+    font-size: 3vw;
+    color: #222;
+    background-color: #E8E7E1 !important;
+    margin: 1vw;
+    margin-bottom: 0vw;
+    max-width: 1%;
+}
+
+.select-prompt {
+    font-size: 2vw;
+    margin: 0;
+}

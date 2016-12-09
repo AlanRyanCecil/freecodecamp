@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>tic-tac-toe</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.min.css">
+        <link rel="stylesheet" href="main.css">
+        <link href="https://fonts.googleapis.com/css?family=The+Girl+Next+Door" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
+    </head>
+    <body>
+
+        <main ng-app="TicTacToeApp" ng-controller="GameCtrl" layout="column" layout-align="center center" layout-padding ng-cloak>
+            <h1 class="game-title" layout-margin> {{ game }} </h1>
+            <div class="board" layout="column">
+                <div class="boardRoww" layout="row" flex>
+                    <board-cell></board-cell>
+                    <board-cell></board-cell>
+                    <board-cell></board-cell>
+                </div>
+                <div class="boardRoww" layout="row" flex>
+                    <board-cell></board-cell>
+                    <board-cell></board-cell>
+                    <board-cell></board-cell>
+                </div>
+                <div class="boardRoww" layout="row" flex>
+                    <board-cell></board-cell>
+                    <board-cell></board-cell>
+                    <board-cell></board-cell>
+                </div>
+            </div>
+            <div layout="row">
+                <md-button class="md-raised avitar-selector" ng-click="avitarSelect('X');" layout-padding>X</md-button>
+                <md-button class="md-raised avitar-selector" ng-click="avitarSelect('O');" layout-padding>O</md-button>
+            </div>
+            <h1 class="select-prompt">select X or O</h1>
+        </main>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.2/angular.js"></script>
+        <script src="https://code.angularjs.org/1.5.2/angular-animate.js"></script>
+        <script src="https://code.angularjs.org/1.5.2/angular-aria.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.0.7/angular-material.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material-icons/0.7.0/angular-material-icons.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+        <script src="app.js"></script>
+    </body>
+</html>
