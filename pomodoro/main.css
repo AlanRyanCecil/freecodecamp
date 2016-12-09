@@ -6,6 +6,10 @@ body {
     background-color: #222;
 }
 
+.title {
+    font-size: 4em;
+}
+
 label {
     /*font-size: 1em;*/
     color: #5AF !important;
