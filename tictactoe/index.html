@@ -12,28 +12,31 @@
 
         <main ng-app="TicTacToeApp" ng-controller="GameCtrl" layout="column" layout-align="center center" layout-padding ng-cloak>
             <h1 class="game-title" layout-margin> {{ game }} </h1>
+            <div class="select-section">
+                <div layout="row">
+                    <md-button class="md-raised avitar-selector" ng-click="avitarSelect('X');" layout-padding>X</md-button>
+                    <md-button class="md-raised avitar-selector" ng-click="avitarSelect('O');" layout-padding>O</md-button>
+                </div>
+                <h1 class="select-prompt">select X or O</h1>
+            </div>
             <div class="board" layout="column">
-                <div class="boardRoww" layout="row" flex>
+                <div class="board-row" layout="row" flex>
                     <board-cell></board-cell>
                     <board-cell></board-cell>
                     <board-cell></board-cell>
                 </div>
-                <div class="boardRoww" layout="row" flex>
+                <div class="board-row" layout="row" flex>
                     <board-cell></board-cell>
                     <board-cell></board-cell>
                     <board-cell></board-cell>
                 </div>
-                <div class="boardRoww" layout="row" flex>
+                <div class="board-row" layout="row" flex>
                     <board-cell></board-cell>
                     <board-cell></board-cell>
                     <board-cell></board-cell>
                 </div>
             </div>
-            <div layout="row">
-                <md-button class="md-raised avitar-selector" ng-click="avitarSelect('X');" layout-padding>X</md-button>
-                <md-button class="md-raised avitar-selector" ng-click="avitarSelect('O');" layout-padding>O</md-button>
-            </div>
-            <h1 class="select-prompt">select X or O</h1>
+            <h1 class="player-one">playing as {{ avitar }} </h1>
         </main>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js"></script>

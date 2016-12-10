@@ -16,19 +16,19 @@ body {
 }
 
 .board {
-    width: 36vw;
-    height: 36vw;
+    width: 32vw;
+    height: 32vw;
     border-radius: .3vw;
-    /*border: .3em solid #3A4049;*/
     background-color: #ECDBB2;
-    /*background-image: url('https://images.freecreatives.com/wp-content/uploads/2015/10/free-lined-paper-texture.jpg');*/
     background-image: url('https://images.freecreatives.com/wp-content/uploads/2016/01/Crumpled-White-Paper-Texture.jpg');
     box-shadow: .4vw .6vw 1vw rgba(0, 16, 32, .6);
     background-size: cover;
+    opacity: 0;
 }
 
-.boardCell {
+.board-cell {
     border: .15vw solid #333240;
+    padding-bottom: .7vw;
     opacity: .8;
 }
 
@@ -46,7 +46,11 @@ body {
     max-width: 1%;
 }
 
-.select-prompt {
+.select-prompt, .player-one {
     font-size: 2vw;
     margin: 0;
+}
+
+.player-one {
+    opacity: 0;
 }
