@@ -75,3 +75,17 @@ body {
 .player-one {
     opacity: 0;
 }
+
+.md-dialog-content {
+    background-image: url('https://images.freecreatives.com/wp-content/uploads/2016/01/Crumpled-White-Paper-Texture.jpg');
+}
+
+.md-title {
+    font-size: 8vw;
+    margin: 0;
+}
+
+md-dialog-actions {
+    display: none !important;
+}
+

@@ -2,16 +2,30 @@
 
 angular.module('TicTacToeApp', ['ngMaterial'])
 
-    .controller('GameCtrl', ['$scope', '$timeout', function ($scope, $timeout) {
+    .controller('GameCtrl', ['$scope', '$timeout', '$mdDialog', function ($scope, $timeout, $mdDialog) {
         $scope.game = "tic-tac-toe";
         $scope.board = angular.element('.board');
         $scope.selectSection = angular.element('.select-section'),
         $scope.playerOne = angular.element('.player-one');
-        $scope.avitar = null;
-        $scope.computer = null;
-        $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
         $scope.playersMoves = [];
         $scope.computersMoves = [];
+        $scope.win = "You Won!!!";
+        $scope.loose = "You Lost :(";
+        $scope.endMessage = $scope.win;
+
+        $scope.resetGame = function () {
+            $scope.board.fadeTo(1000, 0);
+            $scope.selectSection.slideDown(1000);
+            $scope.selectSection.fadeTo(300, 1);
+            $scope.playerOne.fadeTo(1000, 0);
+            $scope.avitar = null;
+            $scope.computer = null;
+            $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            $timeout(function () {
+                $scope.board.find('.move').text('');
+            }, 1000);
+        }
+        $scope.resetGame();
 
         $scope.avitarSelect = function (avitar, comp) {
             $scope.avitar =  avitar;
@@ -22,6 +36,18 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             $timeout(function () {
                 $scope.playerOne.fadeTo(1000, 1);
             }, 900);
+        }
+
+        $scope.showEndMessage = function (message) {
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title(message)
+            )
+                .finally(function () {
+                    $scope.resetGame();
+                    console.log("Dialog closed!");
+                });
         }
     }])
 
@@ -53,17 +79,7 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                                 compMove.fadeIn(300);
                             }, computerThink);
                         } else {
-                            $scope.board.fadeTo(1000, 0);
-                            $scope.selectSection.slideDown(1000);
-                            $scope.selectSection.fadeTo(300, 1);
-                            $scope.playerOne.fadeTo(1000, 0);
-                            $scope.avitar = null;
-                            $scope.computer = null;
-                            $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
-                            $timeout(function () {
-                                $scope.board.find('.move').text('');
-                            }, 1000);
-
+                            $scope.showEndMessage($scope.win);
                         }
                     }
                 });
