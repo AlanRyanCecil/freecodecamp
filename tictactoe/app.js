@@ -4,34 +4,67 @@ angular.module('TicTacToeApp', ['ngMaterial'])
 
     .controller('GameCtrl', ['$scope', '$timeout', function ($scope, $timeout) {
         $scope.game = "tic-tac-toe";
+        $scope.board = angular.element('.board');
+        $scope.selectSection = angular.element('.select-section'),
+        $scope.playerOne = angular.element('.player-one');
         $scope.avitar = null;
-        var board = angular.element('.board'),
-            selectSection = angular.element('.select-section'),
-            playerOne = angular.element('.player-one');
-        $scope.avitarSelect = function (avitar) {
+        $scope.computer = null;
+        $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $scope.playersMoves = [];
+        $scope.computersMoves = [];
+
+        $scope.avitarSelect = function (avitar, comp) {
             $scope.avitar =  avitar;
-            board.fadeTo(1000, 1);
-            selectSection.fadeTo(300, 0);
-            selectSection.slideUp(1000);
+            $scope.computer = comp;
+            $scope.board.fadeTo(1000, 1);
+            $scope.selectSection.fadeTo(300, 0);
+            $scope.selectSection.slideUp(1000);
             $timeout(function () {
-                playerOne.fadeTo(1000, 1);
+                $scope.playerOne.fadeTo(1000, 1);
             }, 900);
         }
     }])
 
-    .directive('boardCell', [function(){
+    .directive('boardCell', ['$timeout', function($timeout){
         return {
             resstrict: 'E',
             template: '<div class="board-cell" layout="row" layout-align="center center" flex><span class="move"></span></div>',
             replace: true,
             link: function($scope, elem, attrs, controller) {
                 elem.on('click', function (event) {
-                    var move = angular.element(elem).children();
-                    if (!$scope.avitar) {
-                        alert("Please select X or O")
-                    } else if (!move.text()) {
-                        move.text($scope.avitar);
-                        move.fadeIn(500);
+                var playerMove = angular.element(elem).children();
+                    console.log($scope.squares);
+                    if (!playerMove.text()) {
+                        var playIndex = $scope.squares.indexOf(elem.attr('id')),
+                            playedSquare = $scope.squares.splice(playIndex, 1);
+
+                        playerMove.text($scope.avitar);
+                        playerMove.fadeIn(300);
+                        var computerThink = Math.floor(Math.random() * 1000) + 500;
+                        if ($scope.squares[0]) {
+                            $timeout(function () {
+                                var randomIndex = Math.floor(Math.random() * $scope.squares.length);
+                                var randomId = $scope.squares[randomIndex];
+                                var compMove = angular.element('#' + randomId).children();
+                                $scope.computersMoves.push($scope.squares.splice(randomIndex, 1));
+                                console.log(randomId);
+
+                                compMove.text($scope.computer);
+                                compMove.fadeIn(300);
+                            }, computerThink);
+                        } else {
+                            $scope.board.fadeTo(1000, 0);
+                            $scope.selectSection.slideDown(1000);
+                            $scope.selectSection.fadeTo(300, 1);
+                            $scope.playerOne.fadeTo(1000, 0);
+                            $scope.avitar = null;
+                            $scope.computer = null;
+                            $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                            $timeout(function () {
+                                $scope.board.find('.move').text('');
+                            }, 1000);
+
+                        }
                     }
                 });
             }
