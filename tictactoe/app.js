@@ -7,35 +7,56 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         $scope.board = angular.element('.board');
         $scope.selectSection = angular.element('.select-section'),
         $scope.playerOne = angular.element('.player-one');
-        $scope.playersMoves = [];
-        $scope.computersMoves = [];
         $scope.win = "You Won!!!";
         $scope.loose = "You Lost :(";
+        $scope.draw = "It's a Draw!";
         $scope.endMessage = $scope.win;
 
         $scope.resetGame = function () {
             $scope.board.fadeTo(1000, 0);
-            $scope.selectSection.slideDown(1000);
-            $scope.selectSection.fadeTo(300, 1);
             $scope.playerOne.fadeTo(1000, 0);
-            $scope.avitar = null;
-            $scope.computer = null;
-            $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+            $scope.selectSection.slideDown(600);
+            $scope.selectSection.fadeTo(300, 1);
             $timeout(function () {
                 $scope.board.find('.move').text('');
+                $scope.avitar = null;
+                $scope.computer = null;
+                $scope.playersTurn = false;
+                $scope.squares = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+                $scope.playersMoves = [];
+                $scope.computersMoves = [];
             }, 1000);
+            $timeout(function () {
+                $scope.computerTakeTurn();
+            }, 2000)
         }
         $scope.resetGame();
 
         $scope.avitarSelect = function (avitar, comp) {
             $scope.avitar =  avitar;
             $scope.computer = comp;
-            $scope.board.fadeTo(1000, 1);
             $scope.selectSection.fadeTo(300, 0);
-            $scope.selectSection.slideUp(1000);
             $timeout(function () {
+                $scope.selectSection.slideUp(800);
+                $scope.board.fadeTo(1000, 1);
                 $scope.playerOne.fadeTo(1000, 1);
-            }, 900);
+            }, 400);
+        }
+
+        $scope.computerTakeTurn = function () {
+            var computerThink = Math.floor(Math.random() * 1000) + 500;
+            $timeout(function () {
+                var randomIndex = Math.floor(Math.random() * $scope.squares.length),
+                    randomId = $scope.squares[randomIndex],
+                    compMove = angular.element('#' + randomId).children(),
+                    playedSquare = Number($scope.squares.splice(randomIndex, 1)[0])
+
+                $scope.computersMoves.push(playedSquare);
+                compMove.text($scope.computer);
+                compMove.fadeIn(300);
+                $timeout($scope.checkForWin($scope.computersMoves, $scope.loose), 1000);
+                $scope.playersTurn = true;
+            }, computerThink);
         }
 
         $scope.showEndMessage = function (message) {
@@ -46,8 +67,34 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             )
                 .finally(function () {
                     $scope.resetGame();
-                    console.log("Dialog closed!");
                 });
+        }
+
+        $scope.intersection = function (arr1, arr2) {
+            var response = [],
+                x;
+            for (x in arr2) {
+                if (arr1.includes(arr2[x])) {
+                    response.push(arr2[x]);
+                }
+            }
+            return response;
+        }
+
+        $scope.checkForWin = function (moves, end) {
+            if ($scope.intersection(moves, [1, 2, 3]).length === 3 ||
+               $scope.intersection(moves, [4, 5, 6]).length === 3 ||
+               $scope.intersection(moves, [7, 8, 9]).length === 3 ||
+               $scope.intersection(moves, [1, 4, 7]).length === 3 ||
+               $scope.intersection(moves, [2, 5, 8]).length === 3 ||
+               $scope.intersection(moves, [3, 6, 9]).length === 3 ||
+               $scope.intersection(moves, [1, 5, 9]).length === 3 ||
+               $scope.intersection(moves, [3, 5, 7]).length === 3 ) {
+                $scope.showEndMessage(end);
+                return true;
+            } else if (!$scope.squares[0]) {
+                $scope.showEndMessage($scope.draw);
+            }
         }
     }])
 
@@ -59,30 +106,26 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             link: function($scope, elem, attrs, controller) {
                 elem.on('click', function (event) {
                 var playerMove = angular.element(elem).children();
-                    console.log($scope.squares);
-                    if (!playerMove.text()) {
+                    if ($scope.playersTurn && !playerMove.text()) {
                         var playIndex = $scope.squares.indexOf(elem.attr('id')),
-                            playedSquare = $scope.squares.splice(playIndex, 1);
+                            playedSquare = Number($scope.squares.splice(playIndex, 1)[0]);
 
+                        $scope.playersTurn = false;
+                        $scope.playersMoves.push(playedSquare);
                         playerMove.text($scope.avitar);
                         playerMove.fadeIn(300);
-                        var computerThink = Math.floor(Math.random() * 1000) + 500;
-                        if ($scope.squares[0]) {
-                            $timeout(function () {
-                                var randomIndex = Math.floor(Math.random() * $scope.squares.length);
-                                var randomId = $scope.squares[randomIndex];
-                                var compMove = angular.element('#' + randomId).children();
-                                $scope.computersMoves.push($scope.squares.splice(randomIndex, 1));
-                                console.log(randomId);
-
-                                compMove.text($scope.computer);
-                                compMove.fadeIn(300);
-                            }, computerThink);
+                        if ($scope.checkForWin($scope.playersMoves, $scope.win)) {
+                        } else if ($scope.squares[0]) {
+                            $scope.computerTakeTurn();
                         } else {
-                            $scope.showEndMessage($scope.win);
+                            $scope.showEndMessage($scope.draw);
                         }
                     }
                 });
             }
         };
+    }])
+
+    .config(['$mdAriaProvider', function ($mdAriaProvider) {
+        $mdAriaProvider.disableWarnings();
     }]);

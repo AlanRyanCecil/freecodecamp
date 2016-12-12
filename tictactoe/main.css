@@ -15,6 +15,19 @@ body {
     padding-top: 0;
 }
 
+.board {
+    width: 32vw;
+    height: 32vw;
+    border-radius: .3vw;
+    padding: 0;
+    background-color: transparent;
+    background-color: #ECDBB2;
+    /*background-image: url('https://images.freecreatives.com/wp-content/uploads/2016/01/Crumpled-White-Paper-Texture.jpg');*/
+    box-shadow: .4vw .6vw 1vw rgba(0, 16, 32, .6);
+    background-size: cover;
+    opacity: 0;
+}
+
 .paper {
     position: absolute;
     width: 32vw;
@@ -32,30 +45,16 @@ body {
     background-size: cover;
 }
 
-.board {
-    width: 32vw;
-    height: 32vw;
-    border-radius: .3vw;
-    padding: 0;
-    background-color: transparent;
-    background-color: #ECDBB2;
-    /*background-image: url('https://images.freecreatives.com/wp-content/uploads/2016/01/Crumpled-White-Paper-Texture.jpg');*/
-    box-shadow: .4vw .6vw 1vw rgba(0, 16, 32, .6);
-    background-size: cover;
-    opacity: 0;
-}
-
 .board-cell {
-    /*border: .15vw solid #333240;*/
     padding-bottom: .7vw;
-    opacity: .9;
+    opacity: .84;
 }
 
 .move {
     display: none;
     font-size: 11vw;
     color: #000;
-    opacity: .93;
+    /*opacity: .93;*/
 }
 
 .avitar-selector {
@@ -82,6 +81,7 @@ body {
 
 .md-title {
     font-size: 8vw;
+    opacity: .93;
     margin: 0;
 }
 
