@@ -13,9 +13,10 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         $scope.endMessage = $scope.win;
 
         $scope.resetGame = function () {
-            $scope.board.fadeTo(1000, 0);
-            $scope.playerOne.fadeTo(1000, 0);
-            $scope.selectSection.slideDown(600);
+            $scope.board.fadeTo(500, 0);
+            $scope.board.find('.move').fadeOut(300);
+            $scope.playerOne.fadeTo(500, 0);
+            $scope.selectSection.slideDown(800);
             $scope.selectSection.fadeTo(300, 1);
             $timeout(function () {
                 $scope.board.find('.move').text('');
@@ -26,9 +27,6 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                 $scope.playersMoves = [];
                 $scope.computersMoves = [];
             }, 1000);
-            $timeout(function () {
-                $scope.computerTakeTurn();
-            }, 2000)
         }
         $scope.resetGame();
 
@@ -38,8 +36,13 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             $scope.selectSection.fadeTo(300, 0);
             $timeout(function () {
                 $scope.selectSection.slideUp(800);
-                $scope.board.fadeTo(1000, 1);
-                $scope.playerOne.fadeTo(1000, 1);
+                $scope.board.fadeTo(500, 1);
+                $scope.playerOne.fadeTo(500, 1);
+                if ($scope.computer === 'X') {
+                    $scope.computerTakeTurn();
+                } else {
+                    $scope.playersTurn = true;
+                }
             }, 400);
         }
 

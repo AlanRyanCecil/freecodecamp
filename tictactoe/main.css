@@ -48,13 +48,13 @@ body {
 .board-cell {
     padding-bottom: .7vw;
     opacity: .84;
+    font-size: 11vw;
 }
 
 .move {
     display: none;
     font-size: 11vw;
     color: #000;
-    /*opacity: .93;*/
 }
 
 .avitar-selector {
@@ -89,3 +89,6 @@ md-dialog-actions {
     display: none !important;
 }
 
+h2 {
+    margin: 0;
+}
