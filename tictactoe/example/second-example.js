@@ -118,7 +118,26 @@ TicTacToeMiniMax.prototype.minValue = function(board) {
 // This is the same as the minValue method except this for the CPU
 // player who is trying to maximize their move score. So they will
 // pick the move that gets them best score x depth.
-TicTacToeMiniMax.prototype.maxValue = function(board) {
+TicTacToeMiniMax.prototype.maxValue = function(board, max) {
+    function great (a, b) {
+        return a > b;
+    }
+
+    function less (a, b) {
+        return a < b;
+    }
+
+    if (max) {
+        var bestMoveValue = -100,
+            currentPlayer = this.maxPlayer,
+            opponent = this.minPlayer,
+            greatOrLess = great;
+    } else {
+        var bestMoveValue = 100,
+            currentPlayer = this.minPlayer,
+            opponent = this.maxPlayer,
+            greatOrLess = less;
+    }
     if (this.checkWinner(this.maxPlayer, board)) {
         return 1;
     } else if (this.checkWinner(this.minPlayer, board)) {
@@ -126,18 +145,20 @@ TicTacToeMiniMax.prototype.maxValue = function(board) {
     } else if (this.checkTie(board)) {
         return 0;
     } else {
-        var bestMoveValue = -100;
-        var move = 0;
-        for (var i = 0; i < board.length; i++) {
-            var newBoard = this.makeMove(i, this.maxPlayer, board);
+        var move = 0,
+            newBoard,
+            predictedMoveValue;
+
+        board.map(function (value, index) {
+            newBoard = this.makeMove(index, currentPlayer, board);
             if (newBoard) {
-                var predictedMoveValue = this.minValue(newBoard);
-                if (predictedMoveValue > bestMoveValue) {
+                predictedMoveValue = this.maxValue(newBoard, !max);
+                if (greatOrLess(predictedMoveValue, bestMoveValue)) {
                     bestMoveValue = predictedMoveValue;
-                    move = i;
+                    move = index;
                 }
             }
-        }
+        })
         return bestMoveValue;
     }
 };

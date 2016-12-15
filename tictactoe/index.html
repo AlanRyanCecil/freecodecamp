@@ -20,26 +20,14 @@
                 <h1 class="select-prompt">select X or O</h1>
                 <h2>(x goes first)</h2>
             </div>
-            <div class="board" layout="column">
+            <div id="board-display" layout="column">
                 <div class="paper"></div>
                 <div class="grid"></div>
-                <div class="board-row" layout="row" flex>
-                    <board-cell id="1"></board-cell>
-                    <board-cell id="2"></board-cell>
-                    <board-cell id="3"></board-cell>
-                </div>
-                <div class="board-row" layout="row" flex>
-                    <board-cell id="4"></board-cell>
-                    <board-cell id="5"></board-cell>
-                    <board-cell id="6"></board-cell>
-                </div>
-                <div class="board-row" layout="row" flex>
-                    <board-cell id="7"></board-cell>
-                    <board-cell id="8"></board-cell>
-                    <board-cell id="9"></board-cell>
+                <div class="board-row" layout="row" ng-repeat="row in [1, 2, 3]" flex>
+                    <board-cell ng-repeat="cell in [1, 2, 3]"></board-cell>
                 </div>
             </div>
-            <h1 class="player-one">playing as {{ avitar }} </h1>
+            <h1 class="playing-as">playing as {{ avitar }} </h1>
             <md-dialog flex="60"></md-dialog>
         </main>
 
