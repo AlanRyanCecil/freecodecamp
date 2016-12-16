@@ -20,57 +20,94 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             computer = 2;
 
         $scope.avitarSelect = function (avitar, computer) {
+            fadeBoardIn();
             $scope.humanAvitar =  avitar;
             computerAvitar = computer;
             if (avitar === 'X') {
                 humansTurn = true;
             } else {
-                makeComputerMove();
+                delayedMakeComputerMove(true);
             }
         }
 
-        $scope.humanMakeMove = function (index) {
-            if (humansTurn && currentBoard[index] === '') {
-                currentBoard[index] = $scope.humanAvitar;
-                updateDisplay();
+        $scope.humanMakeMove = function (move) {
+            if (humansTurn && currentBoard[move] === '') {
+                currentBoard[move] = $scope.humanAvitar;
+                updateDisplay(move, $scope.humanAvitar);
                 humansTurn = false;
                 if (!GameOver(currentBoard)) {
-                    makeComputerMove();
+                    delayedMakeComputerMove();
                 }
             }
         }
 
-        function makeComputerMove () {
+        function delayedMakeComputerMove (first) {
+            var delay = Math.floor(Math.random() * 1000) + 200;
+            $timeout(function () {
+                makeComputerMove(first);
+            }, delay);
+        }
+
+        function randomMove () {
+            var move = Math.floor(Math.random() * 9);
+            return move;
+        }
+
+        function makeComputerMove (first) {
+            var move;
+            if (first) {
+                move = randomMove();
+            } else {
                 minimax(currentBoard, 0);
-                var move = $scope.choice;
+                move = choice;
+            }
                 currentBoard[move] = computerAvitar;
-                updateDisplay();
+                updateDisplay(move, computerAvitar);
                 choice = [];
             if (!GameOver(currentBoard)) {
                     humansTurn = true;
             }
-            // active_turn = "HUMAN";
-            // if (!GameOver(currentBoard))
-            // {
-                
-            // }
         }
 
-        function updateDisplay () {
-            var cells = angular.element('.cell');
-            currentBoard.map(function (value, index) {
-                angular.element(cells[index]).text(value);
-            })
+        function updateDisplay (move, player) {
+            var cells = angular.element('.cell'),
+                cell = angular.element(cells[move]);
+            if (player) {
+                cell.text(player);
+                cell.fadeTo(300, 0.83);
+            } else {
+                cells.text('');
+            }
         }
 
         function startNewGame () {
-            $scope.humanAvitar = null;
             humansTurn = false;
             currentBoard = ['', '', '', '', '', '', '', '', ''];
-            updateDisplay();
+            fadeBoardOut();
+            $timeout(function () {
+                updateDisplay();
+            }, 100);
             choice = null;
         }
         startNewGame();
+
+        function fadeBoardIn () {
+            selectSection.fadeTo(300, 0)
+            selectSection.slideUp(400);
+            $timeout(function () {
+                boardDisplay.fadeTo(300, 1);
+                $scope.playingAs.fadeTo(300, 1);
+            }, 100);
+        }
+
+        function fadeBoardOut () {
+            boardDisplay.fadeTo(300, 0);
+            $scope.playingAs.fadeTo(300, 0);
+            $timeout(function () {
+                selectSection.fadeTo(300, 1)
+                selectSection.slideDown(400);
+            }, 300);
+        }
 
         function checkForWin (player, board) {
             if (board[0] === player && board[1] === player && board[2] === player ||
@@ -110,30 +147,16 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         }
 
         function showEndMessage (message) {
-            $mdDialog.show(
-                $mdDialog.alert()
-                    .clickOutsideToClose(true)
-                    .title(message)
-            )
-                .finally(function () {
-                    startNewGame();
-                });
-        }
-
-        $scope.computerTakeTurn = function () {
-            if ($scope.checkForWin($scope.humanAvitar, currentBoard)) {
-                $scope.showEndMessage($scope.win);
-            } else if ($scope.checkForWin(computerAvitar, currentBoard)) {
-                $scope.showEndMessage($scope.loose);
-            } else if ($scope.checkForDraw(currentBoard)) {
-                $scope.showEndMessage($scope.draw);
-            } else {
-                var move = $scope.miniMax(currentBoard, true)[0];
-                currentBoard[move] = computerAvitar;
-                updateDisplay();
-                // updateDisplay();
-                humansTurn = true;
-            }
+            $timeout(function () {
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title(message)
+                )
+                    .finally(function () {
+                        startNewGame();
+                    });
+            }, 600);
         }
 
         function great (a, b) {
@@ -175,13 +198,13 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             if (active_turn === "COMPUTER") {
                 max_score = Math.max.apply(Math, scores);
                 max_score_index = scores.indexOf(max_score);
-                $scope.choice = moves[max_score_index];
+                choice = moves[max_score_index];
                 return scores[max_score_index];
 
             } else {
                 min_score = Math.min.apply(Math, scores);
                 min_score_index = scores.indexOf(min_score);
-                $scope.choice = moves[min_score_index];
+                choice = moves[min_score_index];
                 return scores[min_score_index];
             }
         }
@@ -237,22 +260,6 @@ var active_turn = "HUMAN";
 var searchTimes = new Array();
 var showAverageTime = true;
 
-
-
-function MakeMove(pos)
-{
-    if (!GameOver(board) && board[pos] == UNOCCUPIED)
-    {
-        board[pos] = HUMAN_PLAYER;
-        if (!GameOver(board))
-        {
-            // var alert = document.getElementById("turnInfo");
-            // active_turn = "COMPUTER";
-            // alert.innerHTML = "Computer's turn.";
-            // makeComputerMove();
-        }
-    }
-}
 
 function score(game, depth) {
     var score = CheckForWinner(game);

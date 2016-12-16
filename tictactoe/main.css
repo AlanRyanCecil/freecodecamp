@@ -25,7 +25,7 @@ body {
     /*background-image: url('https://images.freecreatives.com/wp-content/uploads/2016/01/Crumpled-White-Paper-Texture.jpg');*/
     box-shadow: .4vw .6vw 1vw rgba(0, 16, 32, .6);
     background-size: cover;
-    /*opacity: 0;*/
+    opacity: 0;
 }
 
 .paper {
@@ -52,11 +52,10 @@ body {
 }
 
 .cell {
-    /*display: none;*/
     padding-bottom: .7vw;
     font-size: 11vw;
     color: #000;
-    opacity: .9;
+    opacity: 0;
 }
 
 .avitar-selector {
@@ -68,13 +67,16 @@ body {
     max-width: 1%;
 }
 
+.select-section {
+}
+
 .select-prompt, .player-one {
     font-size: 2.5vw;
     margin: 0;
 }
 
 .playing-as {
-    /*opacity: 0;*/
+    opacity: 0;
 }
 
 .md-dialog-content {
