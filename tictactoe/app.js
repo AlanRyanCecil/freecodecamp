@@ -9,19 +9,23 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         var selectSection = angular.element('.select-section'),
             boardDisplay = angular.element('#board-display'),
             currentBoard,
+            human = 1,
+            computer = 2,
+            draw = 3,
+            humanAvitar,
             computerAvitar,
             humansTurn = false,
+            maximizer = true,
             choice,
-            emptyCell = '',
-            win = "You Won!!!",
-            loose = "You Lost :(",
-            draw = "It's a Draw!",
-            human = 1,
-            computer = 2;
+            emptyCell = null,
+            winMessage = "You Won!!!",
+            looseMessage = "You Lost :(",
+            drawMessage = "It's a Draw!";
 
         $scope.avitarSelect = function (avitar, computer) {
             fadeBoardIn();
-            $scope.humanAvitar =  avitar;
+            $scope.humanDisplay =  avitar;
+            humanAvitar = avitar;
             computerAvitar = computer;
             if (avitar === 'X') {
                 humansTurn = true;
@@ -31,9 +35,9 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         }
 
         $scope.humanMakeMove = function (move) {
-            if (humansTurn && currentBoard[move] === '') {
-                currentBoard[move] = $scope.humanAvitar;
-                updateDisplay(move, $scope.humanAvitar);
+            if (humansTurn && currentBoard[move] === emptyCell) {
+                currentBoard[move] = human;
+                updateDisplay(move);
                 humansTurn = false;
                 if (!GameOver(currentBoard)) {
                     delayedMakeComputerMove();
@@ -61,28 +65,32 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                 minimax(currentBoard, 0);
                 move = choice;
             }
-                currentBoard[move] = computerAvitar;
-                updateDisplay(move, computerAvitar);
+                currentBoard[move] = computer;
+                updateDisplay(move);
                 choice = [];
             if (!GameOver(currentBoard)) {
                     humansTurn = true;
             }
         }
 
-        function updateDisplay (move, player) {
+        function updateDisplay (move) {
             var cells = angular.element('.cell'),
                 cell = angular.element(cells[move]);
-            if (player) {
-                cell.text(player);
+            if (typeof move === 'number') {
+                cell.text(currentBoard[move] === human ? humanAvitar : computerAvitar);
                 cell.fadeTo(300, 0.83);
             } else {
                 cells.text('');
             }
         }
 
+        function newBoard () {
+            return new Array(9).fill(emptyCell);
+        }
+
         function startNewGame () {
             humansTurn = false;
-            currentBoard = ['', '', '', '', '', '', '', '', ''];
+            currentBoard = newBoard();
             fadeBoardOut();
             $timeout(function () {
                 updateDisplay();
@@ -109,39 +117,38 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }, 300);
         }
 
-        function checkForWin (player, board) {
-            if (board[0] === player && board[1] === player && board[2] === player ||
-                board[3] === player && board[4] === player && board[5] === player ||
-                board[6] === player && board[7] === player && board[8] === player ||
-                board[0] === player && board[3] === player && board[6] === player ||
-                board[1] === player && board[4] === player && board[7] === player ||
-                board[2] === player && board[5] === player && board[8] === player ||
-                board[0] === player && board[4] === player && board[8] === player ||
-                board[2] === player && board[4] === player && board[6] === player) {
-                return player;
-            }
+        function CheckForWinner (board) {
+            if (board[0] && board[0] === board[1] && board[1] === board[2]) {return board[0];}
+            if (board[3] && board[3] === board[4] && board[4] === board[5]) {return board[3];}
+            if (board[6] && board[6] === board[7] && board[7] === board[8]) {return board[6];}
+            if (board[0] && board[0] === board[3] && board[3] === board[6]) {return board[0];}
+            if (board[1] && board[1] === board[4] && board[4] === board[7]) {return board[1];}
+            if (board[2] && board[2] === board[5] && board[5] === board[8]) {return board[2];}
+            if (board[0] && board[0] === board[4] && board[4] === board[8]) {return board[0];}
+            if (board[2] && board[2] === board[4] && board[4] === board[6]) {return board[2];}
+            return checkForDraw(board);
         }
 
         function checkForDraw (board) {
-            return board.every(function (element) {
-                return element !== '';
+            var space =  board.some(function (element) {
+                return element === emptyCell;
             });
+            return space ? 0 : draw;
         }
 
-        function GameOver(game) {
-            if (CheckForWinner(game) === 0)
-                return false;
-            else if (CheckForWinner(game) === 1)
-            {
-                showEndMessage(draw);
-            }
-            else if (CheckForWinner(game) === 2)
-            {
-                showEndMessage(win);
-            }
-            else
-            {
-                showEndMessage(loose);
+        function GameOver(board) {
+            switch (CheckForWinner(board)) {
+                case 0:
+                    return false;
+                case human:
+                    showEndMessage(winMessage);
+                    break;
+                case computer:
+                    showEndMessage(looseMessage);
+                    break;
+                default:
+                    showEndMessage(drawMessage);
+                    break;
             }
             return true;
         }
@@ -159,43 +166,35 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }, 600);
         }
 
-        function great (a, b) {
-            return a > b;
-        }
-
-        function less (a, b) {
-            return a < b;
-        }
-
         $scope.makeMove = function (board, move, player) {
             var newBoard = board.slice(0);
-            if (newBoard[move] === '') {
+            if (newBoard[move] === emptyCell) {
                 newBoard[move] = player;
                 return newBoard;
             }
         }
 
-        function minimax (tempBoardGame, depth) {
-            if (CheckForWinner(tempBoardGame) !== 0)
-                return score(tempBoardGame, depth);
+        function minimax (board, depth) {
+            if (CheckForWinner(board) !== 0)
+                return score(board, depth);
             
             depth+=1;
             var scores = [],
                 moves = [],
-                availableMoves = GetAvailableMoves(tempBoardGame),
+                availableMoves = GetAvailableMoves(board),
                 move, possible_game;
 
             availableMoves.map(function (value, index) {
                 move = availableMoves[index];
-                possible_game = GetNewState(move, tempBoardGame);
+                possible_game = GetNewState(board, move);
                 scores.push(minimax(possible_game, depth));
                 moves.push(move);
-                tempBoardGame = UndoMove(tempBoardGame, move);
+                board = UndoMove(board, move);
             })
 
             var max_score, max_score_index, min_score,
                     min_score_index;
-            if (active_turn === "COMPUTER") {
+            if (maximizer) {
                 max_score = Math.max.apply(Math, scores);
                 max_score_index = scores.indexOf(max_score);
                 choice = moves[max_score_index];
@@ -211,12 +210,45 @@ angular.module('TicTacToeApp', ['ngMaterial'])
 
         function GetAvailableMoves(board) {
             var possibleMoves = [];
-            currentBoard.map(function (value, index) {
+            board.map(function (value, index) {
                 if (board[index] === emptyCell) {
                     possibleMoves.push(index);
                 }
             })
             return possibleMoves;
+        }
+
+        function score(board, depth) {
+            var score = CheckForWinner(board);
+            if (score === draw)
+                return 0;
+            else if (score === human)
+                return depth-10;
+            else if (score === computer)
+                return 10-depth;
+        }
+
+        function UndoMove(board, move) {
+            board[move] = emptyCell;
+            ChangeTurn();
+            return board;
+        }
+
+        function GetNewState(board, move) {
+            var piece = ChangeTurn();
+            board[move] = piece;
+            return board;
+        }
+
+        function ChangeTurn() {
+            var avitar;
+            if (maximizer) {
+                avitar = computer;
+            } else {
+                avitar = human;
+            }
+            maximizer = !maximizer;
+            return avitar;
         }
 
 }])
@@ -247,93 +279,3 @@ angular.module('TicTacToeApp', ['ngMaterial'])
     .config(['$mdAriaProvider', function ($mdAriaProvider) {
         $mdAriaProvider.disableWarnings();
     }]);
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-var BOARD_SIZE = 9;
-var UNOCCUPIED = '';
-var HUMAN_PLAYER = 'O';
-var COMPUTER_PLAYER = 'X';
-var active_turn = "HUMAN";
-var searchTimes = new Array();
-var showAverageTime = true;
-
-
-function score(game, depth) {
-    var score = CheckForWinner(game);
-    if (score === 1)
-        return 0;
-    else if (score === 2)
-        return depth-10;
-    else if (score === 3)
-        return 10-depth;
-}
-
-function UndoMove(game, move) {
-    game[move] = UNOCCUPIED;
-    ChangeTurn();
-    return game;
-}
-
-function GetNewState(move, game) {
-    var piece = ChangeTurn();
-    game[move] = piece;
-    return game;
-}
-
-function ChangeTurn() {
-    var piece;
-    if (active_turn === "COMPUTER") {
-        piece = 'X';
-        active_turn = "HUMAN";
-    } else {
-        piece = 'O';
-        active_turn = "COMPUTER";
-    }
-    return piece;
-}
-
-// Check for a winner.  Return
-//   0 if no winner or tie yet
-//   1 if it's a tie
-//   2 if HUMAN_PLAYER won
-//   3 if COMPUTER_PLAYER won
-function CheckForWinner(game) {
-    // Check for horizontal wins
-    var i;
-    for (i = 0; i <= 6; i += 3)
-    {
-        if (game[i] === HUMAN_PLAYER && game[i + 1] === HUMAN_PLAYER && game[i + 2] === HUMAN_PLAYER)
-            return 2;
-        if (game[i] === COMPUTER_PLAYER && game[i + 1] === COMPUTER_PLAYER && game[i + 2] === COMPUTER_PLAYER)
-            return 3;
-    }
-
-    // Check for vertical wins
-    for (i = 0; i <= 2; i++)
-    {
-        if (game[i] === HUMAN_PLAYER && game[i + 3] === HUMAN_PLAYER && game[i + 6] === HUMAN_PLAYER)
-            return 2;
-        if (game[i] === COMPUTER_PLAYER && game[i + 3] === COMPUTER_PLAYER && game[i + 6] === COMPUTER_PLAYER)
-            return 3;
-    }
-
-    // Check for diagonal wins
-    if ((game[0] === HUMAN_PLAYER && game[4] === HUMAN_PLAYER && game[8] === HUMAN_PLAYER) ||
-            (game[2] === HUMAN_PLAYER && game[4] === HUMAN_PLAYER && game[6] === HUMAN_PLAYER))
-        return 2;
-
-    if ((game[0] === COMPUTER_PLAYER && game[4] === COMPUTER_PLAYER && game[8] === COMPUTER_PLAYER) ||
-            (game[2] === COMPUTER_PLAYER && game[4] === COMPUTER_PLAYER && game[6] === COMPUTER_PLAYER))
-        return 3;
-
-    // Check for tie
-    for (i = 0; i < BOARD_SIZE; i++)
-    {
-        if (game[i] !== HUMAN_PLAYER && game[i] !== COMPUTER_PLAYER)
-            return 0;
-    }
-    return 1;
-}
