@@ -46,7 +46,13 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         }
 
         function delayedMakeComputerMove (first) {
-            var delay = Math.floor(Math.random() * 1000) + 200;
+            var space = 200;
+            currentBoard.map(function (cell) {
+                if (cell === emptyCell) {
+                    space += 120;
+                }
+            })
+            var delay = Math.floor(Math.random() * space);
             $timeout(function () {
                 makeComputerMove(first);
             }, delay);
@@ -81,6 +87,7 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                 cell.fadeTo(300, 0.83);
             } else {
                 cells.text('');
+                cells.fadeTo(100, 0);
             }
         }
 
@@ -173,19 +180,18 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             depth += 1;
             var scores = [],
                 moves = [],
-                move, possibleGame,
+                possibleGame,
                 availableMoves = getAvailableMoves(board);
 
-            availableMoves.map(function (value, index) {
-                move = availableMoves[index];
+            availableMoves.map(function (move) {
                 possibleGame = getNewState(board, move);
                 scores.push(minimax(possibleGame, depth));
                 moves.push(move);
                 board = undoMove(board, move);
             })
 
-            var maxScore, maxScoreIndex, minScore,
-                minScoreIndex;
+            var maxScore, maxScoreIndex,
+                minScore, minScoreIndex;
             if (maximizer) {
                 maxScore = Math.max.apply(Math, scores);
                 maxScoreIndex = scores.indexOf(maxScore);
@@ -202,8 +208,8 @@ angular.module('TicTacToeApp', ['ngMaterial'])
 
         function getAvailableMoves(board) {
             var possibleMoves = [];
-            board.map(function (value, index) {
-                if (board[index] === emptyCell) {
+            board.map(function (cell, index) {
+                if (cell === emptyCell) {
                     possibleMoves.push(index);
                 }
             })
@@ -221,18 +227,6 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }
         }
 
-        function undoMove(board, move) {
-            board[move] = emptyCell;
-            changeTurn();
-            return board;
-        }
-
-        function getNewState(board, move) {
-            var avitar = changeTurn();
-            board[move] = avitar;
-            return board;
-        }
-
         function changeTurn() {
             var avitar;
             if (maximizer) {
@@ -242,6 +236,18 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }
             maximizer = !maximizer;
             return avitar;
+        }
+
+        function getNewState(board, move) {
+            var avitar = changeTurn();
+            board[move] = avitar;
+            return board;
+        }
+
+        function undoMove(board, move) {
+            board[move] = emptyCell;
+            changeTurn();
+            return board;
         }
 
 }])
