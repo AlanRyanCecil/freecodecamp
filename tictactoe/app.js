@@ -16,7 +16,7 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             computerAvitar,
             humansTurn = false,
             maximizer = true,
-            choice,
+            minMaxChoice,
             emptyCell = null,
             winMessage = "You Won!!!",
             looseMessage = "You Lost :(",
@@ -39,7 +39,7 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                 currentBoard[move] = human;
                 updateDisplay(move);
                 humansTurn = false;
-                if (!GameOver(currentBoard)) {
+                if (!gameOver(currentBoard)) {
                     delayedMakeComputerMove();
                 }
             }
@@ -63,12 +63,12 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                 move = randomMove();
             } else {
                 minimax(currentBoard, 0);
-                move = choice;
+                move = minMaxChoice;
             }
                 currentBoard[move] = computer;
                 updateDisplay(move);
-                choice = [];
-            if (!GameOver(currentBoard)) {
+                minMaxChoice = [];
+            if (!gameOver(currentBoard)) {
                     humansTurn = true;
             }
         }
@@ -95,7 +95,7 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             $timeout(function () {
                 updateDisplay();
             }, 100);
-            choice = null;
+            minMaxChoice = null;
         }
         startNewGame();
 
@@ -117,7 +117,7 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }, 300);
         }
 
-        function CheckForWinner (board) {
+        function checkForWinner (board) {
             if (board[0] && board[0] === board[1] && board[1] === board[2]) {return board[0];}
             if (board[3] && board[3] === board[4] && board[4] === board[5]) {return board[3];}
             if (board[6] && board[6] === board[7] && board[7] === board[8]) {return board[6];}
@@ -136,8 +136,8 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             return space ? 0 : draw;
         }
 
-        function GameOver(board) {
-            switch (CheckForWinner(board)) {
+        function gameOver(board) {
+            switch (checkForWinner(board)) {
                 case 0:
                     return false;
                 case human:
@@ -166,49 +166,41 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }, 600);
         }
 
-        $scope.makeMove = function (board, move, player) {
-            var newBoard = board.slice(0);
-            if (newBoard[move] === emptyCell) {
-                newBoard[move] = player;
-                return newBoard;
-            }
-        }
-
         function minimax (board, depth) {
-            if (CheckForWinner(board) !== 0)
+            if  (checkForWinner(board) !== 0)
                 return score(board, depth);
             
-            depth+=1;
+            depth += 1;
             var scores = [],
                 moves = [],
-                availableMoves = GetAvailableMoves(board),
-                move, possible_game;
+                move, possibleGame,
+                availableMoves = getAvailableMoves(board);
 
             availableMoves.map(function (value, index) {
                 move = availableMoves[index];
-                possible_game = GetNewState(board, move);
-                scores.push(minimax(possible_game, depth));
+                possibleGame = getNewState(board, move);
+                scores.push(minimax(possibleGame, depth));
                 moves.push(move);
-                board = UndoMove(board, move);
+                board = undoMove(board, move);
             })
 
-            var max_score, max_score_index, min_score,
-                    min_score_index;
+            var maxScore, maxScoreIndex, minScore,
+                minScoreIndex;
             if (maximizer) {
-                max_score = Math.max.apply(Math, scores);
-                max_score_index = scores.indexOf(max_score);
-                choice = moves[max_score_index];
-                return scores[max_score_index];
+                maxScore = Math.max.apply(Math, scores);
+                maxScoreIndex = scores.indexOf(maxScore);
+                minMaxChoice = moves[maxScoreIndex];
+                return scores[maxScoreIndex];
 
             } else {
-                min_score = Math.min.apply(Math, scores);
-                min_score_index = scores.indexOf(min_score);
-                choice = moves[min_score_index];
-                return scores[min_score_index];
+                minScore = Math.min.apply(Math, scores);
+                minScoreIndex = scores.indexOf(minScore);
+                minMaxChoice = moves[minScoreIndex];
+                return scores[minScoreIndex];
             }
         }
 
-        function GetAvailableMoves(board) {
+        function getAvailableMoves(board) {
             var possibleMoves = [];
             board.map(function (value, index) {
                 if (board[index] === emptyCell) {
@@ -219,28 +211,29 @@ angular.module('TicTacToeApp', ['ngMaterial'])
         }
 
         function score(board, depth) {
-            var score = CheckForWinner(board);
-            if (score === draw)
-                return 0;
-            else if (score === human)
-                return depth-10;
-            else if (score === computer)
-                return 10-depth;
+            switch (checkForWinner(board)) {
+                case human:
+                    return depth - 10;
+                case computer:
+                    return 10 - depth;
+                case draw: 
+                    return 0;
+            }
         }
 
-        function UndoMove(board, move) {
+        function undoMove(board, move) {
             board[move] = emptyCell;
-            ChangeTurn();
+            changeTurn();
             return board;
         }
 
-        function GetNewState(board, move) {
-            var piece = ChangeTurn();
-            board[move] = piece;
+        function getNewState(board, move) {
+            var avitar = changeTurn();
+            board[move] = avitar;
             return board;
         }
 
-        function ChangeTurn() {
+        function changeTurn() {
             var avitar;
             if (maximizer) {
                 avitar = computer;
