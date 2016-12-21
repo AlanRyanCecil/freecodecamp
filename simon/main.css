@@ -1,3 +1,79 @@
 [ng-cloak] {
     display: none;
 }
+
+#console {
+    position: absolute;
+    top: 8vw;
+    width: 46vw;
+    height: 46vw;
+}
+
+.quad {
+    width: 72vw;
+    height: 72vw;
+}
+
+.color {
+    r: 14vw;
+    stroke: #222;
+    stroke-width: 1vw;
+}
+
+.green {
+    cx: 22vw;
+    cy: 22vw;
+    fill: #0E6F01;
+}
+
+.red {
+    cx: 50vw;
+    cy: 22vw;
+    fill: #C00008;
+}
+
+.blue {
+    cx: 50vw;
+    cy: 50vw;
+    fill: #0007C0;
+}
+
+.yellow {
+    cx: 22vw;
+    cy: 50vw;
+    fill: yellow;
+}
+
+.clicked.green {
+    fill: #1FB008;
+}
+
+.clicked.red {
+    fill: #F1000F;
+}
+
+.clicked.blue {
+    fill: #0F07FF;
+}
+
+.console-body {
+    position: absolute;
+    top: 8vw;
+    width: 46vw;
+    height: 46vw;
+    border: 2vw solid #222;
+    border-radius: 50%;
+}
+
+.console-center {
+    position: absolute;
+    top: 21vw;
+    border-radius: 50%;
+    width: 20vw;
+    height: 20vw;
+    background-color: #222;
+}
+
+svg {
+
+}
