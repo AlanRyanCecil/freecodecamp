@@ -45,6 +45,39 @@ angular.module('TicTacToeApp', ['ngMaterial'])
             }
         }
 
+        function newBoard () {
+            return new Array(9).fill(emptyCell);
+        }
+
+        function startNewGame () {
+            humansTurn = false;
+            currentBoard = newBoard();
+            fadeBoardOut();
+            $timeout(function () {
+                updateDisplay();
+            }, 100);
+            minMaxChoice = null;
+        }
+        startNewGame();
+
+        function fadeBoardIn () {
+            selectSection.fadeTo(300, 0)
+            selectSection.slideUp(400);
+            $timeout(function () {
+                boardDisplay.fadeTo(300, 1);
+                $scope.playingAs.fadeTo(300, 1);
+            }, 100);
+        }
+
+        function fadeBoardOut () {
+            boardDisplay.fadeTo(300, 0);
+            $scope.playingAs.fadeTo(300, 0);
+            $timeout(function () {
+                selectSection.fadeTo(300, 1)
+                selectSection.slideDown(400);
+            }, 300);
+        }
+
         function delayedMakeComputerMove (first) {
             var space = 200;
             currentBoard.map(function (cell) {
@@ -89,39 +122,6 @@ angular.module('TicTacToeApp', ['ngMaterial'])
                 cells.text('');
                 cells.fadeTo(100, 0);
             }
-        }
-
-        function newBoard () {
-            return new Array(9).fill(emptyCell);
-        }
-
-        function startNewGame () {
-            humansTurn = false;
-            currentBoard = newBoard();
-            fadeBoardOut();
-            $timeout(function () {
-                updateDisplay();
-            }, 100);
-            minMaxChoice = null;
-        }
-        startNewGame();
-
-        function fadeBoardIn () {
-            selectSection.fadeTo(300, 0)
-            selectSection.slideUp(400);
-            $timeout(function () {
-                boardDisplay.fadeTo(300, 1);
-                $scope.playingAs.fadeTo(300, 1);
-            }, 100);
-        }
-
-        function fadeBoardOut () {
-            boardDisplay.fadeTo(300, 0);
-            $scope.playingAs.fadeTo(300, 0);
-            $timeout(function () {
-                selectSection.fadeTo(300, 1)
-                selectSection.slideDown(400);
-            }, 300);
         }
 
         function checkForWinner (board) {
