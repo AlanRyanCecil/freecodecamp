@@ -35,6 +35,7 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     lightTop = new THREE.PointLight(),
                     objLoader = new THREE.ObjectLoader(),
                     fontLoader = new THREE.FontLoader(),
+                    projector = new THREE.Projector(),
                     simonSaysContainer,
                     consoleBody,
                     green,
@@ -91,9 +92,9 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     countContext.font = "320px Digital Numbers";
                     countContext.fillStyle = '#000';
                     countContext.fillRect(0, 0, canvas.width, canvas.height);
-                    countContext.fillStyle = '#550000';
-                    countContext.fillText('00', 0, 350);
-                    countContext.fillStyle = '#EE2210';
+                    countContext.fillStyle = '#2F0000';
+                    countContext.fillText('88', 0, 350);
+                    countContext.fillStyle = '#FE2210';
                     countContext.fillText(leadingZero(0), 0, 350);
                     countTexture = new THREE.Texture(canvas);
                     countTexture.needsUpdate = true;
@@ -175,8 +176,8 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                         countContext.fillStyle = '#000';
                         countContext.fillRect(0, 0, canvas.width, canvas.height);
                         countContext.fillStyle = '#2F0000';
-                        countContext.fillText('00', 0, 350);
-                        countContext.fillStyle = '#EE2210';
+                        countContext.fillText('88', 0, 350);
+                        countContext.fillStyle = '#FE2210';
                         countContext.fillText(leadingZero(countData), 0, 350);
                         console.log(countData);
                     })
