@@ -34,30 +34,20 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     lightAmbient = new THREE.AmbientLight(),
                     lightTop = new THREE.PointLight(),
                     objLoader = new THREE.ObjectLoader(),
-                    fontLoader = new THREE.FontLoader(),
-                    projector = new THREE.Projector(),
-                    simonSaysContainer,
-                    consoleBody,
-                    green,
-                    red,
-                    blue,
-                    yellow,
-                    lattice,
-                    simonSays,
-                    font,
-                    countDisplay,
-                    digitalGhost,
-                    count,
-                    countContext,
-                    countTexture,
+                    raycaster = new THREE.Raycaster(),
+                    mouse = new THREE.Vector2(),
+                    intersects,
+                    clickedObject,
+                    gameScale = width / 36,
+                    simonSaysContainer, consoleBody,
+                    green, red, blue, yellow,
+                    startButton, modeButton, powerSwitch,
+                    lattice, simonSays,
+                    countDisplay, countPosition,
+                    countCanvas, countContext, countMaterial, countTexture,
                     countData = 0,
-                    startButton,
-                    modeButton,
-                    powerSwitch,
                     table,
-                    plane,
                     box;
-
 
                 function initScene () {
                     renderer.setSize(width, height);
@@ -72,46 +62,23 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     lightTop.position.set(0, 100, -50);
                     lightTop.castShadow = true;
 
-                    // fontLoader.load('DigitalNumbers_Regular.json', function (thisFont) {
-                    //     font = thisFont;
-                    //     digitalGhost = new THREE.Mesh(new THREE.TextGeometry('88', {font: font, size: 3.5, height: 0.1}),
-                    //         new THREE.MeshPhongMaterial({color: 0x0200000}));
-                    //     digitalGhost.rotation.x = degToRad(-90);
-                    //     digitalGhost.position.set(-12, 18, 7);
-
-                    //     count = new THREE.Mesh(new THREE.TextGeometry(leadingZero(countData), {font: font, size: 3.5, height: 0.1}),
-                    //         new THREE.MeshPhongMaterial({color: 0x000000, emissive: 0xEE0000}));
-                    //     count.rotation.x = degToRad(-90);
-                    //     count.position.set(-12, 18, 7);
-                    // });
-
-                    var canvas = document.createElement('canvas');
-                    canvas.width = 512;
-                    canvas.height = 512;
-                    countContext = canvas.getContext('2d');
+                    countCanvas = document.createElement('canvas');
+                    countCanvas.width = 512;
+                    countCanvas.height = 512;
+                    countContext = countCanvas.getContext('2d');
                     countContext.font = "320px Digital Numbers";
-                    countContext.fillStyle = '#000';
-                    countContext.fillRect(0, 0, canvas.width, canvas.height);
-                    countContext.fillStyle = '#2F0000';
-                    countContext.fillText('88', 0, 350);
-                    countContext.fillStyle = '#FE2210';
-                    countContext.fillText(leadingZero(0), 0, 350);
-                    countTexture = new THREE.Texture(canvas);
-                    countTexture.needsUpdate = true;
-                    var textMaterial = new THREE.MeshBasicMaterial({map:countTexture, side: THREE.DoubleSide, transparent: true, opacity: 1});
-                    plane = new THREE.Mesh(new THREE.PlaneGeometry(.15, .15),
-                        textMaterial);
-                    plane.position.set(.165, .35, -.11);
-                    // plane.position.set(-8.3, 18, 5.5);
-                    plane.rotation.x = degToRad(-90);
-                    plane.rotation.z = degToRad(180);
+                    countTexture = new THREE.Texture(countCanvas);
+                    countMaterial = new THREE.MeshBasicMaterial({map:countTexture, side: THREE.DoubleSide, transparent: true, opacity: 1});
 
-                    box = new THREE.Mesh( new THREE.BoxGeometry(25, 25, 25),
-                        new THREE.MeshPhongMaterial({color: 0xFF9933}));
+                    countDisplay = new THREE.Mesh(new THREE.PlaneGeometry(.15, .15), countMaterial);
+                    countDisplay.rotation.x = degToRad(-90);
+                    countDisplay.rotation.z = degToRad(180);
+                    countDisplay.name = 'countDisplay';
+
+                    countCanvasUpdate();
 
                     simonSaysContainer = new THREE.Object3D();
-                    var scale = width / 36;
-                    simonSaysContainer.scale.set(scale, scale, scale);
+                    simonSaysContainer.scale.set(gameScale, gameScale, gameScale);
                     simonSaysContainer.rotation.y = degToRad(180);
 
                     objLoader.load('simonSays.json', function (blender) {
@@ -137,10 +104,6 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                         simonSays = blender.getObjectByName('simonSays');
                         simonSays.material = new THREE.MeshPhongMaterial({color: 0xBBBBBB});
 
-                        countDisplay = blender.getObjectByName('countDisplay');
-                        // countDisplay.material = new THREE.MeshPhongMaterial({color: 0x000000});
-                        countDisplay.material = textMaterial;
-
                         modeButton = blender.getObjectByName('modeButton');
                         modeButton.material = new THREE.MeshPhongMaterial({color: 0xEEEF09});
 
@@ -153,6 +116,9 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                         table = blender.getObjectByName('table');
                         table.material = new THREE.MeshPhongMaterial({color: 0x8A572B});
 
+                        countPosition = blender.getObjectByName('countDisplay');
+                        countDisplay.position.set(countPosition.position.x, countPosition.position.y, countPosition.position.z);
+
                         simonSaysContainer.add(consoleBody);
                         simonSaysContainer.add(green);
                         simonSaysContainer.add(red);
@@ -160,27 +126,34 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                         simonSaysContainer.add(yellow);
                         simonSaysContainer.add(lattice);
                         simonSaysContainer.add(simonSays);
-                        simonSaysContainer.add(countDisplay);
                         simonSaysContainer.add(modeButton);
                         simonSaysContainer.add(startButton);
                         simonSaysContainer.add(powerSwitch);
                         simonSaysContainer.add(table);
-                        // scene.add(digitalGhost);
-                        // scene.add(count);
-                        simonSaysContainer.add(plane);
+                        simonSaysContainer.add(countDisplay);
                     });
 
-                    angular.element('body').on('click', function () {
+                    function onMouseClick (event) {
+                        mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                        mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                        raycaster.setFromCamera(mouse, camera);
+                        intersects = raycaster.intersectObjects(simonSaysContainer.children);
+                        var object = intersects[0].object;
+                        clickedObject = intersects[0].object.name;
+                        console.log(clickedObject);
+
+                        camera.lookAt(object.position.x, object.position.y, object.position.z);
+
+                        switch (clickedObject) {
+                            case 'powerSwitch':
+                            powerSwitch.position.x -= .05;
+                        }
+
                         countData++;
-                        plane.material.map.needsUpdate = true;
-                        countContext.fillStyle = '#000';
-                        countContext.fillRect(0, 0, canvas.width, canvas.height);
-                        countContext.fillStyle = '#2F0000';
-                        countContext.fillText('88', 0, 350);
-                        countContext.fillStyle = '#FE2210';
-                        countContext.fillText(leadingZero(countData), 0, 350);
-                        console.log(countData);
-                    })
+                        countCanvasUpdate();
+                    }
+
+                    elem.on('click', onMouseClick);
 
                     scene.add(camera);
                     scene.add(lightAmbient);
@@ -194,6 +167,16 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                 function render () {
                     renderer.render(scene, camera);
                     requestAnimationFrame(render)
+                }
+
+                function countCanvasUpdate () {
+                    countContext.fillStyle = '#000';
+                    countContext.fillRect(0, 0, countCanvas.width, countCanvas.height);
+                    countContext.fillStyle = '#2F0000';
+                    countContext.fillText('88', 0, 350);
+                    countContext.fillStyle = '#FE2210';
+                    countContext.fillText(leadingZero(countData), 0, 350);
+                    countDisplay.material.map.needsUpdate = true;
                 }
 
                 function degToRad (deg) {
