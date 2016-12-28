@@ -17,7 +17,7 @@ angular.module('SimonSaysApp', ['ngMaterial'])
         });
     }])
 
-    .directive('simonSays', [function () {
+    .directive('simonSays', ['$window', '$timeout', '$interval', function ($window, $timeout, $interval) {
         return {
             restrict: 'E',
             replace: false,
@@ -33,20 +33,39 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     renderer = new THREE.WebGLRenderer( {antialias: true} ),
                     lightAmbient = new THREE.AmbientLight(),
                     lightTop = new THREE.PointLight(),
+                    materialLoader = new THREE.MaterialLoader(),
                     objLoader = new THREE.ObjectLoader(),
+                    jsonLoader = new THREE.JSONLoader(),
                     raycaster = new THREE.Raycaster(),
                     mouse = new THREE.Vector2(),
                     intersects,
                     clickedObject,
+                    keyedObject,
                     gameScale = width / 36,
                     simonSaysContainer, consoleBody,
-                    green, red, blue, yellow,
-                    startButton, modeButton, powerSwitch,
-                    lattice, simonSays,
+                    green, red, yellow, blue, colorCache,
+                    randomColorArray,
+                    keyObjectMap,
+                    indicator,
+                    indicatorColor,
+                    strictModeOn = false,
+                    illuminated = false,
+                    buttonTone,
+                    powerSwitch, startButton, modeButton,
+                    opperationButtonMap,
+                    playButtonMap,
+                    labelMaterial,
+                    computerPlay,
+                    computerPlayInterval,
+                    humanMemory,
+                    powerOn = false,
+                    humanTurn = false,
+                    powerChange = null,
+                    powerChanged = 0.05,
+                    powerChangeAbs = 0.01,
                     countDisplay, countPosition,
                     countCanvas, countContext, countMaterial, countTexture,
                     countData = 0,
-                    table,
                     box;
 
                 function initScene () {
@@ -68,92 +87,261 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     countContext = countCanvas.getContext('2d');
                     countContext.font = "320px Digital Numbers";
                     countTexture = new THREE.Texture(countCanvas);
-                    countMaterial = new THREE.MeshBasicMaterial({map:countTexture, side: THREE.DoubleSide, transparent: true, opacity: 1});
+                    countMaterial = new THREE.MeshBasicMaterial({map:countTexture, transparent: true, opacity: 1});
 
                     countDisplay = new THREE.Mesh(new THREE.PlaneGeometry(.15, .15), countMaterial);
                     countDisplay.rotation.x = degToRad(-90);
                     countDisplay.rotation.z = degToRad(180);
-                    countDisplay.name = 'countDisplay';
+                    countDisplay.name = 'countDisplayReplacement';
 
-                    countCanvasUpdate();
+                    countCanvasUpdate('');
 
                     simonSaysContainer = new THREE.Object3D();
                     simonSaysContainer.scale.set(gameScale, gameScale, gameScale);
                     simonSaysContainer.rotation.y = degToRad(180);
 
+                    powerSwitch = new THREE.Object3D();
+
+                    indicator = new THREE.Mesh(new THREE.SphereGeometry(0.016, 16, 16),
+                        new THREE.MeshPhongMaterial({color: 0x015602}));
+
                     objLoader.load('simonSays.json', function (blender) {
+                        blender.getObjectByName('lattice').material = new THREE.MeshLambertMaterial({color: 0x0A0A0A});
+                        blender.getObjectByName('powerBG').material = new THREE.MeshPhongMaterial({color: 0x222222});
+                        blender.getObjectByName('table').material = new THREE.MeshPhongMaterial({color: 0x436883});
+                        labelMaterial = new THREE.MeshPhongMaterial({color: 0xAAAAAA});
+                        blender.getObjectByName('simonSays').material = labelMaterial;
+                        blender.getObjectByName('onoffLabel').material = labelMaterial;
+                        blender.getObjectByName('startLabel').material = labelMaterial;
+                        blender.getObjectByName('modeLabel').material = labelMaterial;
+
                         consoleBody = blender.getObjectByName('consoleBody');
                         consoleBody.material = new THREE.MeshPhongMaterial({color: 0x111111});
                         consoleBody.castShadow = true;
 
                         green = blender.getObjectByName('green');
-                        green.material = new THREE.MeshPhongMaterial({color: 0x22FF33});
+                        green.material = new THREE.MeshPhongMaterial({color: 0x028803});
 
                         red = blender.getObjectByName('red');
-                        red.material = new THREE.MeshPhongMaterial({color: 0xFF3322});
+                        red.material = new THREE.MeshPhongMaterial({color: 0x880A0A});
 
                         blue = blender.getObjectByName('blue');
-                        blue.material = new THREE.MeshPhongMaterial({color: 0x2233FF});
+                        blue.material = new THREE.MeshPhongMaterial({color: 0x020388});
 
                         yellow = blender.getObjectByName('yellow');
-                        yellow.material = new THREE.MeshPhongMaterial({color: 0xEEEF09});
-
-                        lattice = blender.getObjectByName('lattice');
-                        lattice.material = new THREE.MeshLambertMaterial({color: 0x0A0A0A});
-
-                        simonSays = blender.getObjectByName('simonSays');
-                        simonSays.material = new THREE.MeshPhongMaterial({color: 0xBBBBBB});
+                        yellow.material = new THREE.MeshPhongMaterial({color: 0x888809});
 
                         modeButton = blender.getObjectByName('modeButton');
-                        modeButton.material = new THREE.MeshPhongMaterial({color: 0xEEEF09});
+                        modeButton.material = new THREE.MeshPhongMaterial({color: 0x888809});
+
+                        indicator.position.set(modeButton.position.x, modeButton.position.y - 0.006, modeButton.position.z + 0.06);
 
                         startButton = blender.getObjectByName('startButton');
-                        startButton.material = new THREE.MeshPhongMaterial({color: 0xFF3322});
+                        startButton.material = new THREE.MeshPhongMaterial({color: 0x880A0A});
 
                         powerSwitch = blender.getObjectByName('powerSwitch');
-                        powerSwitch.material = new THREE.MeshPhongMaterial({color: 0x22FF33});
+                        powerSwitch.material = new THREE.MeshPhongMaterial({color: 0x028803});
 
-                        table = blender.getObjectByName('table');
-                        table.material = new THREE.MeshPhongMaterial({color: 0x8A572B});
 
                         countPosition = blender.getObjectByName('countDisplay');
                         countDisplay.position.set(countPosition.position.x, countPosition.position.y, countPosition.position.z);
 
-                        simonSaysContainer.add(consoleBody);
-                        simonSaysContainer.add(green);
-                        simonSaysContainer.add(red);
-                        simonSaysContainer.add(blue);
-                        simonSaysContainer.add(yellow);
-                        simonSaysContainer.add(lattice);
-                        simonSaysContainer.add(simonSays);
-                        simonSaysContainer.add(modeButton);
-                        simonSaysContainer.add(startButton);
-                        simonSaysContainer.add(powerSwitch);
-                        simonSaysContainer.add(table);
+                        simonSaysContainer.add(blender);
+                        simonSaysContainer.add(indicator);
                         simonSaysContainer.add(countDisplay);
                     });
 
-                    function onMouseClick (event) {
+                    function determineClickedObject () {
                         mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                         mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
                         raycaster.setFromCamera(mouse, camera);
-                        intersects = raycaster.intersectObjects(simonSaysContainer.children);
-                        var object = intersects[0].object;
-                        clickedObject = intersects[0].object.name;
-                        console.log(clickedObject);
+                        intersects = raycaster.intersectObjects(simonSaysContainer.children[0].children);
+                        return intersects[0].object;
+                    }
 
-                        camera.lookAt(object.position.x, object.position.y, object.position.z);
+                    function powerOpperation () {
+                        powerChange = powerOn ? powerChangeAbs : -powerChangeAbs;
+                        powerChanged = 0;
+                        strictModeOn ? changeMode() : null;
+                        powerOn = !powerOn;
+                        humanTurn = false;
+                        randomColorArray = [];
+                        $interval.cancel(computerPlayInterval);
+                        countCanvasUpdate(powerOn ? (countData = 0) : '');
+                    }
 
-                        switch (clickedObject) {
-                            case 'powerSwitch':
-                            powerSwitch.position.x -= .05;
+                    buttonTone = new Tone.Synth({
+                        "oscillator" : {
+                            "type" : "square"
+                        },
+                        "volume": -24,
+                        "envelope" : {
+                            "attack" : 0.1,
+                            "decay" : 1,
+                            "sustain" : 1,
+                            "release" : 0.1
                         }
+                    }).toMaster();
 
-                        countData++;
-                        countCanvasUpdate();
+                    function buttonFunctions (object, color, tone) {
+                        if (!illuminated) {
+                            illuminated = true;
+                            colorCache = object.material.color;
+                            object.material.color = new THREE.Color(color);
+                            buttonTone.triggerAttack(tone);
+                            $timeout(function () {
+                                object.material.color = colorCache;
+                                illuminated = false;
+                                buttonTone.triggerRelease();
+                            }, 300);
+                        }
+                    }
+
+                    function randomColor () {
+                        return ['green', 'red', 'blue', 'yellow'][Math.floor(Math.random() * 4)];
+                    }
+
+                    function computerPlay (addColor) {
+                        if (powerOn && !humanTurn) {
+                            if (addColor) {
+                                randomColorArray.push(randomColor());
+                            }
+                            countData = randomColorArray.length;
+                            countCanvasUpdate(countData);
+                            humanMemory = Array.from(randomColorArray);
+                            var index = 0;
+                            computerPlayInterval = $interval(function () {
+                                if (randomColorArray[index]) {
+                                    colorButtonAction(randomColorArray[index]);
+                                    index++;
+                                } else {
+                                    $interval.cancel(computerPlayInterval);
+                                }
+                            }, 550);
+                            $timeout(function () {
+                                humanTurn = true;
+                            }, 550 * randomColorArray.length);
+                        }
+                    }
+
+                    function changeMode () {
+                        if (powerOn) {
+                            strictModeOn = !strictModeOn;
+                            indicatorColor = strictModeOn ? 0x0FFF0F : 0x015602;
+                            indicator.material.color = new THREE.Color(indicatorColor);
+                        }
+                    }
+
+                    function gameOver () {
+                        if (strictModeOn) {
+                            countData = 0;
+                            randomColorArray = [];
+                        }
+                        humanTurn = false;
+                        buttonTone.triggerAttack(80);
+                        countCanvasUpdate('!!');
+                        $timeout(function () {
+                            countCanvasUpdate('');
+                        }, 430);
+                        $timeout(function () {
+                            countCanvasUpdate('!!');
+                        }, 860);
+                        $timeout(function () {
+                            countCanvasUpdate('');
+                            buttonTone.triggerRelease();
+                        }, 1290);
+                        $timeout(function () {
+                            countCanvasUpdate(countData);
+                            if (strictModeOn) {
+                                computerPlay(true);
+                            } else {
+                                computerPlay(false);
+                            }
+                        }, 2000);
+                    }
+
+                    function colorButtonAction (objectName) {
+                        switch (objectName) {
+                            case 'green':
+                                buttonFunctions(green, 0x0FFF0F, 560);
+                                break;
+                            case 'red':
+                                buttonFunctions(red, 0xFF0F0F, 440);
+                                break;
+                            case 'yellow':
+                                buttonFunctions(yellow, 0xFFFF00, 320);
+                                break;
+                            case 'blue':
+                                buttonFunctions(blue, 0x0F0FFF, 210);
+                                break;
+                        }
+                    }
+
+                    function playButtonEvent (object) {
+                        if (powerOn && humanTurn && humanMemory[0]) {
+                            if (object !== humanMemory.shift()) {
+                                gameOver();
+                                return "game over";
+                            }
+                            colorButtonAction(object);
+                            if (humanMemory.length === 0) {
+                                humanTurn = false;
+                                $timeout(function () {
+                                    computerPlay(true);
+                                }, 500);
+                            }
+                        }
+                    }
+
+                    function opperationButtonEvent (object) {
+                        if (object === 'powerSwitch') {
+                            powerOpperation();
+                        }
+                        if (object === 'startButton') {
+                            computerPlay(true);
+                        }
+                        if (object === 'modeButton') {
+                            changeMode();
+                        }
+                    }
+
+                    function onMouseClick (event) {
+                        clickedObject = determineClickedObject();
+                        inputObjectMap(clickedObject);
+                    }
+
+                    function inputObjectMap (event) {
+                        var key = event.key || event.name;
+                        if (key === ' ') {
+                            event.preventDefault();
+                        }
+                        playButtonMap = {
+                            'q': 'green',
+                            'w': 'red',
+                            'a': 'yellow',
+                            's': 'blue',
+                            'green': 'green',
+                            'red': 'red',
+                            'yellow': 'yellow',
+                            'blue': 'blue'
+                        }
+                        opperationButtonMap = {
+                            'o': 'powerSwitch',
+                            ' ': 'startButton',
+                            'm': 'modeButton',
+                            'powerSwitch': 'powerSwitch',
+                            'startButton': 'startButton',
+                            'modeButton': 'modeButton'
+                        }
+                        if (playButtonMap.hasOwnProperty(key)) {
+                            playButtonEvent(playButtonMap[key]);
+                        } else if (opperationButtonMap.hasOwnProperty(key)) {
+                            opperationButtonEvent(opperationButtonMap[key]);
+                        }
                     }
 
                     elem.on('click', onMouseClick);
+                    $window.addEventListener('keydown', inputObjectMap);
 
                     scene.add(camera);
                     scene.add(lightAmbient);
@@ -161,21 +349,27 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     scene.add(simonSaysContainer);
 
                     render();
+
                 }
+
                 initScene();
 
                 function render () {
-                    renderer.render(scene, camera);
+                    if (powerChanged < 0.05) {
+                        powerSwitch.position.x += powerChange;
+                        powerChanged += powerChangeAbs;
+                    }
                     requestAnimationFrame(render)
+                    renderer.render(scene, camera);
                 }
 
-                function countCanvasUpdate () {
+                function countCanvasUpdate (count) {
                     countContext.fillStyle = '#000';
                     countContext.fillRect(0, 0, countCanvas.width, countCanvas.height);
                     countContext.fillStyle = '#2F0000';
                     countContext.fillText('88', 0, 350);
                     countContext.fillStyle = '#FE2210';
-                    countContext.fillText(leadingZero(countData), 0, 350);
+                    countContext.fillText(typeof count !== 'number' ? count : leadingZero(count), 0, 350);
                     countDisplay.material.map.needsUpdate = true;
                 }
 
