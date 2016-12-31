@@ -33,7 +33,6 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     renderer = new THREE.WebGLRenderer( {antialias: true} ),
                     lightAmbient = new THREE.AmbientLight(),
                     lightTop = new THREE.PointLight(),
-                    materialLoader = new THREE.MaterialLoader(),
                     objLoader = new THREE.ObjectLoader(),
                     jsonLoader = new THREE.JSONLoader(),
                     raycaster = new THREE.Raycaster(),
@@ -66,12 +65,13 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     countDisplay, countPosition,
                     countCanvas, countContext, countMaterial, countTexture,
                     countData = 0,
+                    table,
                     box;
 
                 function initScene () {
                     renderer.setSize(width, height);
                     elem.append(renderer.domElement);
-                    renderer.setClearColor(0x666666);
+                    renderer.setClearColor(0x436883);
 
                     camera.position.set(0, 120, 0);
                     camera.rotation.x = degToRad(-90);
@@ -95,6 +95,10 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     countDisplay.name = 'countDisplayReplacement';
 
                     countCanvasUpdate('');
+
+                    table = new THREE.Mesh(new THREE.PlaneGeometry(500, 500),
+                        new THREE.MeshPhongMaterial({color:0x436883}));
+                    table.rotation.x = degToRad(-90);
 
                     simonSaysContainer = new THREE.Object3D();
                     simonSaysContainer.scale.set(gameScale, gameScale, gameScale);
@@ -146,6 +150,7 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                         countPosition = blender.getObjectByName('countDisplay');
                         countDisplay.position.set(countPosition.position.x, countPosition.position.y, countPosition.position.z);
 
+                        blender.remove(blender.getObjectByName('table'));
                         simonSaysContainer.add(blender);
                         simonSaysContainer.add(indicator);
                         simonSaysContainer.add(countDisplay);
@@ -346,6 +351,7 @@ angular.module('SimonSaysApp', ['ngMaterial'])
                     scene.add(camera);
                     scene.add(lightAmbient);
                     scene.add(lightTop);
+                    scene.add(table);
                     scene.add(simonSaysContainer);
 
                     render();
