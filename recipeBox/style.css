@@ -1,0 +1,15 @@
+body {
+    background-color: #ACCACB;
+}
+
+.recipe-box-title {
+    margin: 3vw;
+    font-family: 'Pacifico', cursive;
+    color: #F2A13C;
+    font-size: 5vw;
+    text-shadow: 0.3vw 0.3vw 0.2vw rgba(0, 0, 0, 0.4);
+}
+
+.card {
+    margin: 1vw;
+}

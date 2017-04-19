@@ -1,0 +1,26 @@
+.heading {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 5em;
+    text-align: center;
+    color: white;
+    background-color: green;
+    margin: 2vw 0 2vw 0;
+    padding: 0.5vw;
+}
+
+.user-image {
+    max-width: 2em;
+    min-width: 2em;
+}
+
+.list-item {
+    margin: 1vw;
+}
+
+th {
+    font-size: 2em;
+}
+
+td {
+    font-size: 1.5em;
+}
