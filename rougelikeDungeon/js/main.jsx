@@ -9,7 +9,7 @@ class PhaserContainer extends React.Component {
         game.state.add('StateNext', StateNext);
         game.state.add('StateBoss', StateBoss);
         game.state.add('StateOver', StateOver);
-        game.state.start('StateMain');
+        game.state.start('StateBoss');
     }
     render () {
         return (

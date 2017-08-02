@@ -3,7 +3,9 @@
 let game,
     gameTitle = 'The Lost Dungeon',
     dungeonArray,
-    player, playerSize, playerAcceleration, maxVelocity,
+    player, maxVelocity,
+    playerSize = Math.round(window.innerWidth / 105),    //16,
+    playerAcceleration = Math.round(window.innerWidth / 512),
     paused,
     visibleArea, visibleSize,
     itemSize,
@@ -11,6 +13,10 @@ let game,
     weapons,
     population,
     enemies, enemySize, enemyStrength, redStrength, greenStrength, blueStrength,
+    boss, bossSize, bossStunned, gemSize, gemRed, gemGreen, gemBlue, gemYellow,
+    bossFill,
+    gemCase, gemDisplayRed, gemDisplayGreen, gemDisplayBlue, gemDisplayYellow, gemDisplaySize,
+    gemsCaptured = 0,
     mazeSize, roomCount, roomSize,
     mazeGroup, mazeCellSize, mazeFill, mazeStroke, mazeObject,
     encounterGroup, hitOrRun, hitOrRunActive,
@@ -30,7 +36,11 @@ let game,
         yellow: 0xFFDD22,
         orange: 0xFBAA09,
         red: 0xFF2222,
-        green: 0x88FF22
+        green: 0x88FF22,
+        gemRed: 0xFF11BB,
+        gemGreen: 0x00FF00,
+        gemBlue: 0x4800FF,
+        gemYellow: 0xFFF400
     },
     playerRoom = 15,
     levelColor,
@@ -77,13 +87,11 @@ let StateMain = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         cursors = game.input.keyboard.createCursorKeys();
 
-        playerSize = Math.round(window.innerWidth / 105);    //16,
         visibleSize = Math.round(window.innerWidth / 168);   //10 size in cells
         maxVelocity = Math.round(window.innerWidth / 10);    //500;
 
         itemSize = Math.round(window.innerWidth / 132);
 
-        playerAcceleration = Math.round(window.innerWidth / 512);
 
 
         enemySize = Math.round(window.innerWidth / 105);
@@ -169,7 +177,7 @@ let StateMain = {
         display.add(powerMeter);
 
 
-        game.time.events.loop(512, this.enemyMovment, this);
+        game.time.events.loop(512, this.enemyMovement, this);
         setTimeout(_=> {
             // this.encounter();
         }, 1000);
@@ -374,7 +382,12 @@ let StateMain = {
         player.hasWeapon = false;
         population.weapons = Math.floor(population.weapons * 0.8);
         population.evil = Math.ceil(population.evil * 1.2);
-        game.state.start('StateNext');
+
+        if (level === 4) {
+            game.state.start('StateBoss');
+        } else {
+            game.state.start('StateNext');
+        }
     },
 
     die: function (life) {
@@ -430,16 +443,16 @@ let StateMain = {
         }
     },
 
-    enemyMovment: function () {
+    enemyMovement: function () {
         if (!paused) {
-            let split,
-                velocity;
             enemies.children.map(foe => {
-                split = Math.floor(Math.random() * 3);
+                let split = Math.floor(Math.random() * 3);
                 if (!split) {
-                    velocity  = Math.floor(window.innerWidth / 20);
-                    foe.body.velocity.x = game.rnd.integerInRange(-velocity, velocity);
-                    foe.body.velocity.y = game.rnd.integerInRange(-velocity, velocity);
+                    let velocity  = Math.floor(window.innerWidth / 20),
+                        vx = game.rnd.integerInRange(-velocity, velocity),
+                        vy = game.rnd.integerInRange(-velocity, velocity);
+
+                    game.add.tween(foe.body.velocity).to({x: vx, y: vy}, 500, Phaser.Easing.Linear.None, true);
                 }
             });
         }
@@ -775,37 +788,263 @@ let StateNext = {
 }
 
 let StateBoss = {
+    blocks: null,
+
+    gameOver: function () {
+        game.lockRender = true;
+        setTimeout(_=> {
+            game.lockRender = false;
+            game.state.start('StateOver');
+        }, 1000);
+    },
+
+    bossMovement: function (boss) {
+        if (!paused) {
+            let split = Math.floor(Math.random() * 3);
+            if (!split) {
+                let velocity  = Math.floor(window.innerWidth / 4),
+                    vx = game.rnd.integerInRange(-velocity, velocity),
+                    vy = game.rnd.integerInRange(-velocity, velocity);
+
+                game.add.tween(boss.body.velocity).to({x: vx, y: vy}, 500, Phaser.Easing.Linear.None, true);
+            }
+        }
+    },
+
+    getGemLocation: function () {
+        let x = Math.floor(Math.random() * 2) ? -3 : bossSize - gemSize + 3,
+            y = game.rnd.integerInRange(3, bossSize - gemSize - 3);
+
+        return Math.floor(Math.random() * 2) ? [x, y] : [y, x];
+    },
+
+    createGem: function (name) {
+        let gemLocation = this.getGemLocation(),
+            gem = game.make.graphics(gemLocation[0], gemLocation[1]);
+
+        gem.beginFill(colorPalette[name]);
+        gem.drawRect(0, 0, gemSize, gemSize);
+        gem.endFill();
+        gem.alpha = 0;
+        gem.name = name;
+        game.physics.enable(gem, Phaser.Physics.ARCADE);
+        gem.body.enable = false;
+        boss.addChild(gem);
+    },
+
+    stunFlash: function () {
+        bossFill.clear();
+        if (bossFill.strobe) {
+            bossFill.beginFill(0x2C4349);
+            bossFill.drawRect(0, 0, bossSize, bossSize);
+            bossFill.endFill();
+            bossFill.strobe = false;
+        } else {
+            bossFill.beginFill(0xFF2233);
+            bossFill.drawRect(0, 0, bossSize, bossSize);
+            bossFill.endFill();
+            bossFill.strobe = true;
+        }
+    },
+
+    stunBoss: function () {
+        bossStunned = true;
+        let strobe = game.time.events.loop(32, this.stunFlash, this, boss);
+        setTimeout(_=> {
+            bossStunned = false;
+            game.time.events.remove(strobe);
+            bossFill.strobe = true;
+            this.stunFlash();
+        }, 1000);
+    },
+
+    collectGem: function () {
+        let fadeTime = 500;
+        let gem = gemCase.children[gemsCaptured - 1];
+        let gemFill = game.make.graphics(gem.x + gem.width / 2, gem.y + gem.height / 2);
+        gemFill.beginFill(gem.lineColor);
+        gemFill.drawRect(0, 0, gem.width, gem.height);
+        gemFill.endFill();
+        gemFill.scale.x = 0;
+        gemFill.scale.y = 0;
+        gemFill.alpha = 0;
+        gemCase.add(gemFill);
+        game.add.tween(gemFill).to({x: gem.x, y: gem.y}, fadeTime, Phaser.Easing.Linear.None, true);
+        game.add.tween(gemFill.scale).to({x: 1, y: 1}, fadeTime, Phaser.Easing.Linear.None, true);
+        game.add.tween(gemFill).to({alpha: 1}, fadeTime, Phaser.Easing.Linear.None, true);
+    },
+
+    showGem: function () {
+        let gem = boss.children[0];
+        setTimeout(_=> {
+            gem.body.enable = true;
+            game.add.tween(gem).to({alpha: 1}, 1000, Phaser.Easing.Linear.None, true);
+        }, 500);
+    },
+
+    getGem: function (player, gem) {
+        gemsCaptured++;
+        gem.destroy();
+        if (gemsCaptured === 4) {
+            win = true;
+            setTimeout(_=> {
+                this.gameOver();
+            }, 1000)
+        }
+        this.stunBoss();
+        this.collectGem();
+        this.showGem();
+    },
+
+    gameOver: function () {
+        game.lockRender = true;
+        setTimeout(_=> {
+            game.lockRender = false;
+            game.state.start('StateOver');
+        }, 1000);
+    },
+
+    bossAttack: function () {
+        if (!bossStunned) {
+            this.gameOver();
+        }
+    },
+
     create: function () {
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        cursors = game.input.keyboard.createCursorKeys();
+        this.blocks = game.add.group();
+
         let bossTitle = game.add.text(window.innerWidth / 2, window.innerHeight / 12, 'Big Assed Boss', style);
         bossTitle.anchor.set(0.5);
         bossTitle.fontSize = '8vh';
+
+        let gemText = game.add.text(window.innerWidth / 12, window.innerHeight / 10, 'Gems', style);
+        gemCase = game.add.group();
+        gemCase.x = gemText.x;
+        gemCase.y = gemText.y;
+
+        gemDisplaySize = window.innerWidth / 64;
+        let gemX = Math.floor(gemDisplaySize * 1.6), 
+            gemY = gemText.height;
+
+        gemDisplayRed = game.make.graphics(0, gemY);
+        gemDisplayRed.lineStyle(2, colorPalette.gemRed);
+        gemDisplayRed.drawRect(0, 0, gemDisplaySize, gemDisplaySize);
+        gemCase.add(gemDisplayRed);
+
+        gemDisplayGreen = game.make.graphics(gemX, gemY);
+        gemDisplayGreen.lineStyle(2, colorPalette.gemGreen);
+        gemDisplayGreen.drawRect(0, 0, gemDisplaySize, gemDisplaySize);
+        gemCase.add(gemDisplayGreen);
+
+        gemDisplayBlue = game.make.graphics(gemX * 2, gemY);
+        gemDisplayBlue.lineStyle(2, colorPalette.gemBlue);
+        gemDisplayBlue.drawRect(0, 0, gemDisplaySize, gemDisplaySize);
+        gemCase.add(gemDisplayBlue);
+
+        gemDisplayYellow = game.make.graphics(gemX * 3, gemY);
+        gemDisplayYellow.lineStyle(2, colorPalette.gemYellow);
+        gemDisplayYellow.drawRect(0, 0, gemDisplaySize, gemDisplaySize);
+        gemCase.add(gemDisplayYellow);
+
+        player = game.add.graphics(200, 200);
+        player.beginFill(playerColor);
+        player.drawRect(0, 0, playerSize, playerSize);
+        player.endFill();
+        player.name = 'player';
+        player.vitality = 100;
 
         let size = Math.round(window.innerWidth / 72),
             rowLength = Math.floor(window.innerWidth / size),
             columnLength = Math.floor(window.innerHeight / size),
             row = new Array(rowLength).fill(0),
-            matrix = new Array(columnLength).fill(row),
-            block;
+            matrix = new Array(columnLength).fill(row);
 
         matrix.forEach((r, cidx) => r.forEach((c, ridx) => {
             if (ridx === 0 || cidx === 0 || ridx === rowLength - 1 || cidx === columnLength - 1) {
-                block = game.add.graphics(size * ridx, size * cidx);
+                let block = game.make.graphics(size * ridx, size * cidx);
                 block.lineStyle(2);
                 block.beginFill(levelColor[1]);
                 block.drawRect(0, 0, size, size);
                 block.endFill();
+                game.physics.enable([block], Phaser.Physics.ARCADE);
+                block.body.immovable = true;
+                this.blocks.add(block);
             }
         }));
 
-        let bossSize = Math.floor(window.innerWidth / 5),
+        bossSize = Math.floor(window.innerWidth / 5);
+        let bossGroup = game.add.group(),
             xx = (window.innerWidth / 2) - (bossSize / 2),
             yy = (window.innerHeight / 2) - (bossSize / 2);
 
-        let boss = game.add.graphics();
-        boss.beginFill(0xFF22CC);
-        boss.drawRect(xx, yy, bossSize, bossSize);
-        boss.endFill();
+        boss = game.add.graphics(xx, yy);
+        boss.drawRect(0, 0, bossSize, bossSize);
+
+        gemSize = Math.floor(bossSize / 6);
+
+        this.createGem('gemRed');
+        this.createGem('gemGreen');
+        this.createGem('gemBlue');
+        this.createGem('gemYellow');
+
+        this.showGem();
+
+        bossFill = game.make.graphics();
+        bossFill.beginFill(0x2C4349);
+        bossFill.drawRect(0, 0, bossSize, bossSize);
+        bossFill.endFill();
+        boss.addChild(bossFill);
         game.world.bringToTop(bossTitle);
+        game.world.bringToTop(gemText);
+        game.world.bringToTop(gemCase);
+
+        game.physics.enable([player, boss], Phaser.Physics.ARCADE);
+        boss.body.bounce.set(0.5);
+
+        // game.time.events.loop(512, this.bossMovement, this, boss);
+    },
+
+    playerControl: function () {
+        let x = player.body.velocity.x,
+            y = player.body.velocity.y,
+            velocitySquare = (x * x) + (y * y),
+            angle;
+
+        if (velocitySquare > Math.pow(maxVelocity, 2)) {
+            angle = Math.atan2(y, x);
+            x = Math.cos(angle) * maxVelocity;
+            y = Math.sin(angle) * maxVelocity;
+            player.body.velocity.x = x;
+            player.body.velocity.y = y;
+        }
+
+        if (cursors.left.isDown) {
+            player.body.velocity.x -= playerAcceleration;
+        }
+        if (cursors.right.isDown) {
+            player.body.velocity.x += playerAcceleration;
+            }
+        if (cursors.up.isDown) {
+            player.body.velocity.y -= playerAcceleration;
+        }
+        if (cursors.down.isDown) {
+            player.body.velocity.y += playerAcceleration;
+        }
+    },
+
+    update: function () {
+        game.physics.arcade.collide(player, boss, this.bossAttack, null, this);
+        game.physics.arcade.collide(player, this.blocks);
+        game.physics.arcade.collide(boss, this.blocks);
+        boss.children.map((child, index, array) => {
+            if (index !== array.length - 1) {
+                game.physics.arcade.collide(player, child, this.getGem, null, this);
+            }
+        });
+
+        this.playerControl();
     }
 }
 
@@ -824,7 +1063,7 @@ let StateOver = {
         let xx = window.innerWidth / 2;
         let yy = Math.floor((window.innerHeight / 2) * 0.9);
 
-        let endText = win ? 'dungeon mastered!' : 'better lunch next  slime';
+        let endText = win ? 'dungeon mastered!' : 'better lunch next slime';
 
         let endMessage = game.add.text(0, 0, endText, style);
         endMessage.fontSize = '8vh';
