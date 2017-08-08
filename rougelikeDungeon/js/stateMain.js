@@ -4,7 +4,7 @@ let game,
     gameTitle = 'The Lost Dungeon',
     dungeonArray,
     player, maxVelocity,
-    playerSize = Math.round(window.innerWidth / 105),    //16,
+    playerSize = Math.round(window.innerWidth / 105),
     playerAcceleration = Math.round(window.innerWidth / 512),
     paused,
     visibleArea, visibleSize,
@@ -13,8 +13,7 @@ let game,
     weapons,
     population,
     enemies, enemySize, enemyStrength, redStrength, greenStrength, blueStrength,
-    boss, bossSize, bossStunned, gemSize, gemRed, gemGreen, gemBlue, gemYellow,
-    bossFill,
+    boss, bossFill, bossSize, bossStunned, gemSize,
     gemCase, gemDisplayRed, gemDisplayGreen, gemDisplayBlue, gemDisplayYellow, gemDisplaySize,
     gemsCaptured = 0,
     mazeSize, roomCount, roomSize,
@@ -42,6 +41,7 @@ let game,
         gemBlue: 0x4800FF,
         gemYellow: 0xFFF400
     },
+
     playerRoom = 15,
     levelColor,
     playerColor = 0x3366FF,
@@ -63,7 +63,6 @@ let game,
 
     style = {
         font: 'Black Ops One, Arial',
-        // font: 'Codystar,  Arial',
         fill: '#F03108',
         fontSize: '4vh'
     };
@@ -87,12 +86,10 @@ let StateMain = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         cursors = game.input.keyboard.createCursorKeys();
 
-        visibleSize = Math.round(window.innerWidth / 168);   //10 size in cells
-        maxVelocity = Math.round(window.innerWidth / 10);    //500;
+        visibleSize = Math.round(window.innerWidth / 168);
+        maxVelocity = Math.round(window.innerWidth / 10);
 
         itemSize = Math.round(window.innerWidth / 132);
-
-
 
         enemySize = Math.round(window.innerWidth / 105);
         mazeCellSize = Math.round(window.innerWidth / 70);  //24;
@@ -105,8 +102,7 @@ let StateMain = {
         worldWidth = (mazeCellSize * mazeSize) + window.innerWidth;
         game.world.setBounds(0, 0, worldWidth, worldWidth);
 
-        dungeonArray = new Bungeon(mazeSize, roomCount, roomSize);
-        let tRows = new Array()
+        dungeonArray = new Dungeon(mazeSize, mazeSize, roomCount, roomSize);
         mazeGroup = game.add.group();
 
         visibleArea = game.add.graphics(playerSize / 2, playerSize / 2);
@@ -178,17 +174,6 @@ let StateMain = {
 
 
         game.time.events.loop(512, this.enemyMovement, this);
-        setTimeout(_=> {
-            // this.encounter();
-        }, 1000);
-        console.log(player);
-    },
-
-    unpause: function (event) {
-        if (game.paused) {
-            game.paused = false;
-        }
-        console.log(event);
     },
 
     isWall: function (row, col, maze) {
@@ -347,23 +332,6 @@ let StateMain = {
         });
     },
 
-    makeBossRoom: function () {
-        let size = Math.round(window.innerWidth / 72),
-            rowLength = Math.floor(window.innerWidth / size),
-            columnLength = Math.floor(window.innerHeight / size),
-            row = new Array(rowLength).fill(0),
-            matrix = new Array(columnLength).fill(row);
-
-        return matrix;
-    },
-
-    colorChange: function (block, color) {
-        block.clear();
-        block.beginFill(color);
-        block.drawRect(0, 0, block.width, block.height);
-        block.endFill();
-    },
-
     hide: function (things) {
         things.map(thing => {
             thing.children.map(t => t.alpha = 0);
@@ -382,12 +350,7 @@ let StateMain = {
         player.hasWeapon = false;
         population.weapons = Math.floor(population.weapons * 0.8);
         population.evil = Math.ceil(population.evil * 1.2);
-
-        if (level === 4) {
-            game.state.start('StateBoss');
-        } else {
-            game.state.start('StateNext');
-        }
+        game.state.start('StateNext');
     },
 
     die: function (life) {
@@ -464,7 +427,6 @@ let StateMain = {
         let x = currentPower < 1 ? currentPower : 1;
 
         game.add.tween(powerMeter.scale).to({x: x}, 64, Phaser.Easing.Linear.None, true);
-        // powerMeter.scale.x = currentPower < 1 ? currentPower : 1;
     },
 
     getVitality: function (player, vital) {
@@ -551,8 +513,8 @@ let StateMain = {
     takeDamage: function (foe) {
         let damage = game.rnd.integerInRange(1, Math.floor(foe.vitality / 2));
         player.vitality -= damage;
-        let playerVitality = (player.vitality / 100).toFixed(2);
-        playerVitality = playerVitality >= 0 ? Number(playerVitality) : 0;
+        let playerVitality = Number((player.vitality / 100).toFixed(2));
+        playerVitality = playerVitality >= 0 ? playerVitality : 0;
         game.add.tween(lifeMeter.scale).to({x: playerVitality}, 500, Phaser.Easing.Linear.None, true);
         this.displayDamage(damage);
     },
@@ -596,6 +558,12 @@ let StateMain = {
 
     run: function (button, pointer, foe) {
         this.takeDamage(foe);
+        if (player.vitality <= 0) {
+            this.die(player);
+            setTimeout(_=> {
+                this.gameOver();
+            }, 360);
+        }
         foe.justEncountered = true;
         setTimeout(_=> {
             foe.justEncountered = false;
@@ -741,11 +709,9 @@ let StateTitle = {
 
         let bullet = '\n\u00B7    ';
         let instructionText = '' +
+            bullet + 'The strength of your attack increases with speed and vitality.' +
             bullet + 'You can only attack when you have a weapon.' +
-            // bullet + 'When you have a weapon you will be bright.' +
-            bullet + 'Each weapon can only be used once.' +
-            bullet + 'Weapons are stationary and gold.' +
-            bullet + 'The strength of your attack increases with speed and vitality.';
+            bullet + 'Weapons are made of gold.';
 
         let instructionDisplay = game.add.text(0, 0, instructionText, style);
         instructionDisplay.fontSize = '2vh';
@@ -776,13 +742,19 @@ let StateTitle = {
 
 let StateNext = {
     create: function () {
-        let levelDisplay = game.add.text(0, 0, 'level ' + level, style);
-        levelDisplay.fontSize = '6vh';
+        let levelMessage = level === 4 ? 'MAIN BOSS' : 'level ' + level,
+            levelDisplay = game.add.text(0, 0, levelMessage, style);
+
+        levelDisplay.fontSize = '8vh';
         levelDisplay.anchor.set(0.5);
         levelDisplay.x = (window.innerWidth / 2);
         levelDisplay.y = (window.innerHeight / 2) - levelDisplay.height;
         setTimeout(_=> {
-            game.state.start('StateMain');
+            if (level === 4) {
+                game.state.start('StateBoss');
+            } else {
+                game.state.start('StateMain');
+            }
         }, 2000);
     }
 }
@@ -802,7 +774,7 @@ let StateBoss = {
         if (!paused) {
             let split = Math.floor(Math.random() * 3);
             if (!split) {
-                let velocity  = Math.floor(window.innerWidth / 4),
+                let velocity  = Math.floor(window.innerWidth / 8),
                     vx = game.rnd.integerInRange(-velocity, velocity),
                     vy = game.rnd.integerInRange(-velocity, velocity);
 
@@ -812,8 +784,9 @@ let StateBoss = {
     },
 
     getGemLocation: function () {
-        let x = Math.floor(Math.random() * 2) ? -3 : bossSize - gemSize + 3,
-            y = game.rnd.integerInRange(3, bossSize - gemSize - 3);
+        let protrude = Math.floor(window.innerWidth / 256);
+        let x = Math.floor(Math.random() * 2) ? -protrude : bossSize - gemSize + protrude,
+            y = game.rnd.integerInRange(protrude, bossSize - gemSize - protrude);
 
         return Math.floor(Math.random() * 2) ? [x, y] : [y, x];
     },
@@ -879,7 +852,7 @@ let StateBoss = {
         setTimeout(_=> {
             gem.body.enable = true;
             game.add.tween(gem).to({alpha: 1}, 1000, Phaser.Easing.Linear.None, true);
-        }, 500);
+        }, 2000);
     },
 
     getGem: function (player, gem) {
@@ -914,10 +887,6 @@ let StateBoss = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         cursors = game.input.keyboard.createCursorKeys();
         this.blocks = game.add.group();
-
-        let bossTitle = game.add.text(window.innerWidth / 2, window.innerHeight / 12, 'Big Assed Boss', style);
-        bossTitle.anchor.set(0.5);
-        bossTitle.fontSize = '8vh';
 
         let gemText = game.add.text(window.innerWidth / 12, window.innerHeight / 10, 'Gems', style);
         gemCase = game.add.group();
@@ -996,14 +965,13 @@ let StateBoss = {
         bossFill.drawRect(0, 0, bossSize, bossSize);
         bossFill.endFill();
         boss.addChild(bossFill);
-        game.world.bringToTop(bossTitle);
         game.world.bringToTop(gemText);
         game.world.bringToTop(gemCase);
 
         game.physics.enable([player, boss], Phaser.Physics.ARCADE);
         boss.body.bounce.set(0.5);
 
-        // game.time.events.loop(512, this.bossMovement, this, boss);
+        game.time.events.loop(700, this.bossMovement, this, boss);
     },
 
     playerControl: function () {
@@ -1106,44 +1074,50 @@ let StateOver = {
 };
 
    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////DUNGEONGENERATOR/////////////////////////////////////////////////////////
+ ///////////////////////////////////////////////PLUGIN/////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function Tungeon (size, roomCount, roomSize) {
-    let roomId = 2,
-        maze = new Array(size).fill(0),
-        row = new Array(size).fill(0),
-        rooms = [];
-    maze.map((x, i) => maze[i] = Array.from(row));
 
+class Dungeon {
+  constructor(h, w, rooms, roomSize) {
+    this.maze = [];
 
-    return maze;
-}
-
-class Bungeon {
-  constructor(size, rooms, roomSize) {
-    this.maze = new Array(size).fill([]);
-
-    this.h = size;
-    this.w = size;
+    this.h = h;
+    this.w = w;
     this.rooms = [];
     this.roomSize = roomSize;
 
-    this._roomId = 2;
+    this._lastRoomId = 2;
 
-    let row = new Array(size).fill(0);
-    this.maze.map((x, i) => this.maze[i] = Array.from(row));
+    this._createEmpty();
 
     for (var i = 0; i < rooms; i++) {
       var newRoom = this._createRoom();
       if (newRoom) {
+        // log('>> Created', newRoom);
         this._appendRoom(newRoom);
         this.rooms.push(newRoom);
       }
     }
 
+    // log('Total rooms created: ' + this.rooms.length);
+
     this._connectRooms();
+    this._restoreMaze();
+  }
+
+  setSpawn() {
+    this.spawn = {};
+    this.spawn.room = this.rooms[Math.floor(this.rooms.length * Math.random())];
+    this.spawn.x = this.spawn.room.cx;
+    this.spawn.y = this.spawn.room.cy;
+  }
+
+  _restoreMaze() {
+    for (var i = 0; i < this.rooms.length; i++) {
+      this._appendRoom(this.rooms[i]);
+    }
   }
 
   _connectRooms() {
@@ -1204,7 +1178,7 @@ class Bungeon {
 
   _createRoom() {
     var room = {
-      id: this._roomId,
+      id: this._lastRoomId,
       h: Math.floor(Math.random() * this.roomSize / 2.0 + this.roomSize / 2.0),
       w: Math.floor(Math.random() * this.roomSize / 2.0 + this.roomSize / 2.0),
       x: 0,
@@ -1227,7 +1201,7 @@ class Bungeon {
     room.cx = Math.floor(room.x + room.w / 2.0);
     room.cy = Math.floor(room.y + room.h / 2.0);
 
-    this._roomId++;
+    this._lastRoomId++;
     return room;
   }
 
@@ -1250,4 +1224,42 @@ class Bungeon {
 
     return false;
   }
+
+  _createEmpty() {
+    for (var i = 0; i < this.h; i++) {
+      this.maze[i] = [];
+      for (var j = 0; j < this.w; j++) {
+        this.maze[i][j] = 0;
+      }
+    }
+  }
+
 };
+
+class PhaserContainer extends React.Component {
+    componentDidMount() {
+        game = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.AUTO, 'phaser-container');
+
+        game.state.add('StateTitle', StateTitle);
+        game.state.add('StateMain', StateMain);
+        game.state.add('StateNext', StateNext);
+        game.state.add('StateBoss', StateBoss);
+        game.state.add('StateOver', StateOver);
+        game.state.start('StateTitle');
+    }
+    render() {
+        return React.createElement('div', { id: 'phaser-container' });
+    }
+}
+
+class Main extends React.Component {
+    render() {
+        return React.createElement(
+            'section',
+            null,
+            React.createElement(PhaserContainer, null)
+        );
+    }
+}
+
+ReactDOM.render(React.createElement(Main, null), document.getElementById('root'));
