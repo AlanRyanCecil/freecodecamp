@@ -105,9 +105,9 @@ style = {
 function resetGame() {
     population = {
         player: 1,
-        weapons: 52,
-        vitality: 52,
-        evil: 40 //86
+        weapons: 32,
+        vitality: 16,
+        evil: 40
     };
     score = 0;
     level = 1;
@@ -127,7 +127,7 @@ let StateMain = {
         itemSize = Math.round(window.innerWidth / 132);
 
         enemySize = Math.round(window.innerWidth / 105);
-        mazeCellSize = Math.round(window.innerWidth / 70); //24;
+        mazeCellSize = Math.round(window.innerWidth / 70);
         mazeSize = 64;
         roomCount = 32;
         roomSize = 16;
